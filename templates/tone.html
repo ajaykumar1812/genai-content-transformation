@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Tone Transformer - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-chat-quote me-1"></i> ADAPTIVE VOICE
+      </div>
+      <h2 class="fw-bold text-white mb-1">Tone Transformer</h2>
+      <p class="text-white-50 mb-0">Shift your message's voice between professional, formal, persuasive, casual, and executive styles.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm">
+        <form id="toneForm">
+          <label class="form-label text-white fw-bold mb-2">Draft Content</label>
+          <textarea id="toneSource" name="source_text" class="form-control custom-textarea bg-dark text-white border-secondary mb-3" rows="8" placeholder="Paste your draft or message here..." required></textarea>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Target Tone</label>
+              <select class="form-select bg-dark text-white border-secondary" name="tone" id="targetTone">
+                <option value="Professional" selected>Professional (Corporate)</option>
+                <option value="Formal">Authoritative & Formal</option>
+                <option value="Casual & Friendly">Casual & Friendly</option>
+                <option value="Persuasive">Compelling & Persuasive</option>
+                <option value="Executive">Executive & Strategic</option>
+                <option value="Technical">Precise & Technical</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Audience</label>
+              <select class="form-select bg-dark text-white border-secondary" name="audience" id="toneAudience">
+                <option value="General audience" selected>General Audience</option>
+                <option value="Executive Leadership">Executive Leadership</option>
+                <option value="Clients & Customers">Clients & Customers</option>
+                <option value="Internal Team">Internal Team</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="toneBtn" class="btn btn-warning w-100 py-2 fw-semibold text-dark d-flex align-items-center justify-content-center gap-2">
+            <span class="spinner-border spinner-border-sm d-none" id="toneSpinner"></span>
+            <i class="bi bi-chat-quote"></i>
+            <span id="toneBtnText">Transform Tone</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-white mb-0">Tone-Adapted Content</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="toneCopyBtn" disabled><i class="bi bi-clipboard"></i> Copy</button>
+            <button type="button" class="btn btn-sm btn-outline-warning text-white" id="toneDownloadBtn" disabled><i class="bi bi-download"></i> TXT</button>
+          </div>
+        </div>
+        <div class="flex-grow-1 p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-50 overflow-auto" style="min-height: 380px;">
+          <div id="toneEmpty" class="text-center py-5 text-white-50">
+            <i class="bi bi-chat-quote fs-1 d-block mb-3 text-secondary opacity-50"></i>
+            <p class="small">Enter your text and select a target tone to see the rewritten communication.</p>
+          </div>
+          <div id="toneResult" class="d-none text-white-50 font-monospace" style="white-space: pre-wrap; word-break: break-word;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('toneForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('toneBtn');
+  const spinner = document.getElementById('toneSpinner');
+  const btnText = document.getElementById('toneBtnText');
+  const resultDiv = document.getElementById('toneResult');
+  const emptyDiv = document.getElementById('toneEmpty');
+  const copyBtn = document.getElementById('toneCopyBtn');
+  const downloadBtn = document.getElementById('toneDownloadBtn');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btnText.textContent = 'Transforming Tone...';
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/tone', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Tone transformation failed');
+    
+    emptyDiv.classList.add('d-none');
+    resultDiv.classList.remove('d-none');
+    resultDiv.textContent = data.output;
+    copyBtn.disabled = false;
+    downloadBtn.disabled = false;
+    showToast('Tone adapted successfully!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    btnText.textContent = 'Transform Tone';
+  }
+});
+
+document.getElementById('toneCopyBtn').addEventListener('click', function() {
+  const text = document.getElementById('toneResult').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Transformed tone copied!'));
+});
+
+document.getElementById('toneDownloadBtn').addEventListener('click', function() {
+  const text = document.getElementById('toneResult').textContent;
+  downloadBlob(text, 'text/plain', 'tone_adapted_output.txt');
+});
+</script>
+{% endblock %}

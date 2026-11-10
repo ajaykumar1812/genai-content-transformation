@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Grammar & Clarity Corrector - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-spellcheck me-1"></i> PRECISION PROOFREADING
+      </div>
+      <h2 class="fw-bold text-white mb-1">Grammar & Clarity Corrector</h2>
+      <p class="text-white-50 mb-0">Detect and resolve grammatical errors, spelling typos, punctuation flaws, and awkward syntax.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm">
+        <form id="grammarForm">
+          <label class="form-label text-white fw-bold mb-2">Input Text</label>
+          <textarea id="gramSource" name="source_text" class="form-control custom-textarea bg-dark text-white border-secondary mb-4" rows="10" placeholder="Paste text here to proofread..." required></textarea>
+
+          <button type="submit" id="gramBtn" class="btn btn-danger w-100 py-2 fw-semibold text-white d-flex align-items-center justify-content-center gap-2">
+            <span class="spinner-border spinner-border-sm d-none" id="gramSpinner"></span>
+            <i class="bi bi-spellcheck"></i>
+            <span id="gramBtnText">Proofread & Correct</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-white mb-0">Clean Corrected Output</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="gramCopyBtn" disabled><i class="bi bi-clipboard"></i> Copy</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="gramDownloadBtn" disabled><i class="bi bi-download"></i> TXT</button>
+          </div>
+        </div>
+        <div class="flex-grow-1 p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-50 overflow-auto" style="min-height: 380px;">
+          <div id="gramEmpty" class="text-center py-5 text-white-50">
+            <i class="bi bi-spellcheck fs-1 d-block mb-3 text-secondary opacity-50"></i>
+            <p class="small">Enter text to inspect grammar, syntax, spelling and punctuation corrections.</p>
+          </div>
+          <div id="gramResult" class="d-none text-white-50 font-monospace" style="white-space: pre-wrap; word-break: break-word;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('grammarForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('gramBtn');
+  const spinner = document.getElementById('gramSpinner');
+  const btnText = document.getElementById('gramBtnText');
+  const resultDiv = document.getElementById('gramResult');
+  const emptyDiv = document.getElementById('gramEmpty');
+  const copyBtn = document.getElementById('gramCopyBtn');
+  const downloadBtn = document.getElementById('gramDownloadBtn');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btnText.textContent = 'Proofreading...';
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/grammar', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Correction failed');
+    
+    emptyDiv.classList.add('d-none');
+    resultDiv.classList.remove('d-none');
+    resultDiv.textContent = data.output;
+    copyBtn.disabled = false;
+    downloadBtn.disabled = false;
+    showToast('Grammar checked & corrected!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    btnText.textContent = 'Proofread & Correct';
+  }
+});
+
+document.getElementById('gramCopyBtn').addEventListener('click', function() {
+  const text = document.getElementById('gramResult').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Corrected text copied!'));
+});
+
+document.getElementById('gramDownloadBtn').addEventListener('click', function() {
+  const text = document.getElementById('gramResult').textContent;
+  downloadBlob(text, 'text/plain', 'corrected_output.txt');
+});
+</script>
+{% endblock %}

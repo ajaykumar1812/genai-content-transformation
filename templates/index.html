@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Home - AI Content Studio{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center py-5">
+  <div class="container py-lg-4">
+    <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">
+      <i class="bi bi-stars me-1"></i> NEXT-GEN AI WORKSPACE &bull; 2026 EDITION
+    </div>
+    <h1 class="display-4 fw-bold text-white mb-3">
+      Transform Any Content.<br>
+      <span class="text-primary-gradient">Communicate With Impact.</span>
+    </h1>
+    <p class="lead text-white-50 mx-auto mb-4" style="max-width: 680px;">
+      Empower your workflow with intelligent automated content transformation. Convert reports, articles, and research into executive summaries, presentation decks, tailored advisories, and multi-channel content instantly.
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 py-2 shadow-sm d-flex align-items-center gap-2">
+        <span>Get Started Free</span> <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4 py-2">
+        <span>Sign In</span>
+      </a>
+    </div>
+
+    <!-- Quick Tool Cards -->
+    <div class="row g-4 text-start mt-2">
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-primary"><i class="bi bi-magic fs-3"></i></div>
+          <h5 class="fw-bold text-white">AI Content Studio</h5>
+          <p class="text-white-50 small mb-0">Turn raw source documents into blogs, formal reports, presentation slides, and FAQs tailored to specific audiences.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-info"><i class="bi bi-file-earmark-text fs-3"></i></div>
+          <h5 class="fw-bold text-white">Text Summarizer</h5>
+          <p class="text-white-50 small mb-0">Condense complex long-form text into executive summaries, high-priority bullet points, or concise TL;DR briefs.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-success"><i class="bi bi-repeat fs-3"></i></div>
+          <h5 class="fw-bold text-white">Text Paraphraser</h5>
+          <p class="text-white-50 small mb-0">Rephrase your text in Fluent, Creative, Academic, or Simplified Plain English while strictly preserving factual accuracy.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-warning"><i class="bi bi-chat-quote fs-3"></i></div>
+          <h5 class="fw-bold text-white">Tone Transformer</h5>
+          <p class="text-white-50 small mb-0">Shift your message effortlessly between Professional, Formal, Friendly, Persuasive, and Executive tones.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-danger"><i class="bi bi-spellcheck fs-3"></i></div>
+          <h5 class="fw-bold text-white">Grammar & Clarity Fixer</h5>
+          <p class="text-white-50 small mb-0">Eliminate spelling errors, awkward sentence structures, and punctuation mistakes with clear explanations.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 feature-card p-4">
+          <div class="feature-icon mb-3 text-secondary"><i class="bi bi-download fs-3"></i></div>
+          <h5 class="fw-bold text-white">Export & History</h5>
+          <p class="text-white-50 small mb-0">Save transformations to your private history. One-click copy to clipboard and export to TXT, PDF, Word DOCX, and PowerPoint PPTX.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

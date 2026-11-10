@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Content Studio - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-magic me-1"></i> MULTI-FORMAT TRANSFORMATION
+      </div>
+      <h2 class="fw-bold text-white mb-1">AI Content Studio</h2>
+      <p class="text-white-50 mb-0">Transform articles, reports and documents into executive briefs, blogs, presentations and more.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <span class="badge bg-dark border border-secondary text-white-50 p-2">
+        <i class="bi bi-shield-check text-success me-1"></i> Private & Encrypted
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Source Input & Configuration -->
+    <div class="col-lg-7">
+      <div class="card feature-card p-4 h-100 shadow-sm">
+        <form id="studioForm" enctype="multipart/form-data">
+          <!-- Step 1: Input -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label text-white fw-bold mb-0">
+              <span class="badge bg-primary me-2">1</span> Source Content
+            </label>
+            <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" id="clearSourceBtn">
+              <i class="bi bi-x-circle me-1"></i> Clear
+            </button>
+          </div>
+
+          <textarea id="sourceText" name="source_text" class="form-control custom-textarea bg-dark text-white border-secondary mb-3" rows="7" placeholder="Paste your article, meeting transcript, research notes or report text here..."></textarea>
+
+          <!-- Document Upload Option -->
+          <div class="mb-3">
+            <div class="upload-zone text-center p-3 rounded-3 border border-secondary border-dashed" id="dropZone">
+              <i class="bi bi-cloud-arrow-up fs-3 text-primary d-block mb-1"></i>
+              <span class="text-white small fw-semibold d-block" id="fileNameDisplay">Drag & drop document or browse files</span>
+              <small class="text-white-50 d-block mb-2">Supports .TXT, .PDF, and .DOCX (Up to 15 MB)</small>
+              <input type="file" id="fileInput" name="file" accept=".txt,.pdf,.docx" class="d-none">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-folder2-open me-1"></i> Select File
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Transformation Parameters -->
+          <label class="form-label text-white fw-bold mt-2 mb-3">
+            <span class="badge bg-primary me-2">2</span> Shape & Configure Output
+          </label>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Output Deliverable Format</label>
+              <select class="form-select bg-dark text-white border-secondary" name="output_format" id="outputFormat">
+                <option value="Executive Summary" selected>Executive Summary</option>
+                <option value="Blog Post">Polished Blog Post</option>
+                <option value="Business Report">Structured Business Report</option>
+                <option value="Presentation Deck">Presentation Slide Deck</option>
+                <option value="Social Media Campaign">Social Media Campaign (LinkedIn/X)</option>
+                <option value="FAQ Guide">Frequently Asked Questions (FAQ)</option>
+                <option value="Advisory Bulletin">Formal Advisory Bulletin</option>
+                <option value="Key Takeaways">Prioritized Key Takeaways</option>
+              </select>
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Target Audience</label>
+              <select class="form-select bg-dark text-white border-secondary" name="audience" id="audience">
+                <option value="General audience" selected>General Audience</option>
+                <option value="Business professionals">Business Executives & Leaders</option>
+                <option value="Technical audience">Technical & Engineering Teams</option>
+                <option value="Students">Students & Learners</option>
+                <option value="Government officials">Policy Makers & Government</option>
+                <option value="Marketing teams">Marketing & Sales Professionals</option>
+              </select>
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Tone of Voice</label>
+              <select class="form-select bg-dark text-white border-secondary" name="tone" id="tone">
+                <option value="Professional" selected>Professional & Confident</option>
+                <option value="Formal">Authoritative & Formal</option>
+                <option value="Casual & Friendly">Conversational & Friendly</option>
+                <option value="Persuasive">Compelling & Persuasive</option>
+                <option value="Executive">Executive & Strategic</option>
+                <option value="Technical">Precise & Technical</option>
+              </select>
+            </div>
+
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Level of Detail</label>
+              <select class="form-select bg-dark text-white border-secondary" name="detail" id="detail">
+                <option value="Short">Concise / Brief</option>
+                <option value="Medium" selected>Balanced / Medium</option>
+                <option value="Detailed">Comprehensive / In-depth</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label text-white-50 small fw-semibold">AI Generation Provider</label>
+              <select class="form-select bg-dark text-white border-secondary" name="provider" id="provider">
+                <option value="auto" selected>Auto-Select (Gemini or OpenAI or Local)</option>
+                <option value="gemini">Google Gemini AI</option>
+                <option value="openai">OpenAI GPT</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="transformBtn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+            <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status"></span>
+            <i class="bi bi-stars" id="btnIcon"></i>
+            <span id="btnText">Transform Content</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Generated Output -->
+    <div class="col-lg-5">
+      <div class="card feature-card p-4 h-100 shadow-sm d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="fw-bold text-white mb-0">Generated Deliverable</h5>
+            <small class="text-white-50" id="resultMeta">Ready for transformation</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="copyResultBtn" disabled title="Copy to Clipboard">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" disabled>
+                <i class="bi bi-download me-1"></i> Export
+              </button>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                <li><button class="dropdown-item" onclick="exportContent('txt')"><i class="bi bi-filetype-txt me-2"></i>Plain Text (.txt)</button></li>
+                <li><button class="dropdown-item" onclick="exportContent('docx')"><i class="bi bi-file-earmark-word me-2"></i>Word Document (.docx)</button></li>
+                <li><button class="dropdown-item" onclick="exportContent('pdf')"><i class="bi bi-file-earmark-pdf me-2"></i>PDF Document (.pdf)</button></li>
+                <li id="pptxExportOption"><button class="dropdown-item" onclick="exportContent('pptx')"><i class="bi bi-file-earmark-slides me-2"></i>PowerPoint (.pptx)</button></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Preview Area -->
+        <div class="output-container flex-grow-1 p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-50 overflow-auto" style="min-height: 420px; max-height: 600px;">
+          <div id="emptyState" class="text-center py-5 text-white-50">
+            <i class="bi bi-magic fs-1 d-block mb-3 text-secondary opacity-50"></i>
+            <h6 class="text-white fw-semibold mb-1">Your AI Deliverable Will Appear Here</h6>
+            <p class="small text-white-50 mb-0">Provide source content on the left and click "Transform Content" to start.</p>
+          </div>
+          <div id="outputContent" class="d-none text-white-50 font-monospace" style="white-space: pre-wrap; word-break: break-word; font-size: 0.92rem;"></div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-25 small text-white-50">
+          <span id="charCount">0 characters &bull; 0 words</span>
+          <span class="badge bg-secondary" id="engineBadge">Awaiting Input</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

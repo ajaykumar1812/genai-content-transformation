@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome Banner -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 p-4 rounded-4 dashboard-hero shadow-sm">
+    <div>
+      <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-person-badge me-1"></i> ACTIVE WORKSPACE
+      </div>
+      <h2 class="fw-bold text-white mb-1">Welcome back, {{ current_user.name }}!</h2>
+      <p class="text-white-50 mb-0">Transform, summarize, paraphrase and refine your content with AI.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('studio') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+        <i class="bi bi-plus-circle"></i> <span>New Transformation</span>
+      </a>
+      <a href="{{ url_for('history') }}" class="btn btn-outline-light d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history"></i> <span>View History</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Statistics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card stat-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-white-50 small text-uppercase fw-semibold">Transformations</span>
+            <h3 class="fw-bold text-white my-1">{{ stats.total_transformations }}</h3>
+            <small class="text-success"><i class="bi bi-check2-circle"></i> Saved & exported</small>
+          </div>
+          <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-cpu"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card stat-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-white-50 small text-uppercase fw-semibold">Input Words</span>
+            <h3 class="fw-bold text-white my-1">{{ "{:,}".format(stats.words_input) }}</h3>
+            <small class="text-info"><i class="bi bi-arrow-down-left"></i> Source parsed</small>
+          </div>
+          <div class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-file-text"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card stat-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-white-50 small text-uppercase fw-semibold">Generated Words</span>
+            <h3 class="fw-bold text-white my-1">{{ "{:,}".format(stats.words_output) }}</h3>
+            <small class="text-warning"><i class="bi bi-arrow-up-right"></i> High-impact content</small>
+          </div>
+          <div class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-lightning-charge"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card stat-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-white-50 small text-uppercase fw-semibold">Storage Engine</span>
+            <h5 class="fw-bold text-white my-1">{{ stats.storage_mode }}</h5>
+            <small class="{% if stats.mongodb_connected %}text-success{% else %}text-warning{% endif %}">
+              <i class="bi bi-database"></i> {{ 'Connected & indexed' if stats.mongodb_connected else 'Local JSON fallback' }}
+            </small>
+          </div>
+          <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-database-check"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Launchpads -->
+  <div class="card feature-card p-4 mb-4">
+    <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-grid-fill text-primary"></i> <span>Quick Action Studio</span>
+    </h5>
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('studio') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-primary mb-2"><i class="bi bi-magic fs-3"></i></div>
+          <div class="fw-bold text-white small">Studio</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Multi-format</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('summarizer') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-info mb-2"><i class="bi bi-file-earmark-text fs-3"></i></div>
+          <div class="fw-bold text-white small">Summarize</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Exec & briefs</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('paraphraser') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-success mb-2"><i class="bi bi-repeat fs-3"></i></div>
+          <div class="fw-bold text-white small">Paraphrase</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Fluent rewrites</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('tone') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-warning mb-2"><i class="bi bi-chat-quote fs-3"></i></div>
+          <div class="fw-bold text-white small">Tone Shift</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Adapt voice</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('grammar') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-danger mb-2"><i class="bi bi-spellcheck fs-3"></i></div>
+          <div class="fw-bold text-white small">Grammar</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Fix & polish</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('history') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none">
+          <div class="tile-icon text-secondary mb-2"><i class="bi bi-folder2-open fs-3"></i></div>
+          <div class="fw-bold text-white small">History</div>
+          <small class="text-white-50 d-block" style="font-size: 0.75rem;">Saved assets</small>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transformations Table -->
+  <div class="card feature-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history text-primary"></i> <span>Recent Transformations</span>
+      </h5>
+      <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+    </div>
+
+    {% if stats.recent_items %}
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0 custom-table">
+        <thead>
+          <tr>
+            <th scope="col">Title / Deliverable</th>
+            <th scope="col">Format</th>
+            <th scope="col">Audience & Tone</th>
+            <th scope="col">Date</th>
+            <th scope="col" class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in stats.recent_items %}
+          <tr>
+            <td>
+              <div class="fw-semibold text-white">{{ item.title or item.format }}</div>
+              <small class="text-white-50 text-truncate d-inline-block" style="max-width: 280px;">{{ item.output[:80] }}...</small>
+            </td>
+            <td><span class="badge bg-secondary">{{ item.format }}</span></td>
+            <td><small class="text-white-50">{{ item.audience or 'General' }} &bull; {{ item.tone or 'Standard' }}</small></td>
+            <td><small class="text-white-50">{{ item.created_at[:16].replace('T', ' ') if item.created_at else 'Recent' }}</small></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary" onclick="viewHistoryItem('{{ item.id }}')" title="View Output">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-white-50">
+      <i class="bi bi-journal-x fs-1 d-block mb-2 text-secondary"></i>
+      <p class="mb-2">No transformations yet in this workspace.</p>
+      <a href="{{ url_for('studio') }}" class="btn btn-sm btn-primary">Start Your First Transformation</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- History Preview Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-white border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title fw-bold" id="modalTitle">Transformed Deliverable</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge bg-primary" id="modalFormat">Format</span>
+          <span class="badge bg-secondary" id="modalTone">Tone</span>
+          <span class="badge bg-dark border border-secondary" id="modalDate">Date</span>
+        </div>
+        <div class="p-3 rounded bg-black bg-opacity-50 border border-secondary border-opacity-50">
+          <pre id="modalContent" class="text-white-50 mb-0 font-monospace" style="white-space: pre-wrap; word-break: break-word;"></pre>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary justify-content-between">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-light btn-sm" id="modalCopyBtn"><i class="bi bi-clipboard me-1"></i> Copy</button>
+          <button type="button" class="btn btn-primary btn-sm" id="modalDownloadBtn"><i class="bi bi-download me-1"></i> Download TXT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

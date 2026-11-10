@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Text Summarizer - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-file-earmark-text me-1"></i> INTELLIGENT COMPRESSION
+      </div>
+      <h2 class="fw-bold text-white mb-1">Text Summarizer</h2>
+      <p class="text-white-50 mb-0">Condense long articles, reports, and documentation into crisp, high-impact summaries.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm">
+        <form id="summarizeForm">
+          <label class="form-label text-white fw-bold mb-2">Source Document or Text</label>
+          <textarea id="sumSource" name="source_text" class="form-control custom-textarea bg-dark text-white border-secondary mb-3" rows="8" placeholder="Paste article or notes here..." required></textarea>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Summary Structure</label>
+              <select class="form-select bg-dark text-white border-secondary" name="summary_type" id="sumType">
+                <option value="Executive Summary" selected>Executive Summary</option>
+                <option value="Bullet Points">Prioritized Bullet Points</option>
+                <option value="TL;DR">Quick TL;DR Brief</option>
+                <option value="Comprehensive Summary">Section-by-Section Summary</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-white-50 small fw-semibold">Length & Detail</label>
+              <select class="form-select bg-dark text-white border-secondary" name="detail" id="sumDetail">
+                <option value="Short">Concise (3-4 points)</option>
+                <option value="Medium" selected>Balanced (5-8 points)</option>
+                <option value="Detailed">Comprehensive</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="sumBtn" class="btn btn-info w-100 py-2 fw-semibold text-white d-flex align-items-center justify-content-center gap-2">
+            <span class="spinner-border spinner-border-sm d-none" id="sumSpinner"></span>
+            <i class="bi bi-file-text"></i>
+            <span id="sumBtnText">Generate Summary</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-white mb-0">Summarized Output</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="sumCopyBtn" disabled><i class="bi bi-clipboard"></i> Copy</button>
+            <button type="button" class="btn btn-sm btn-outline-info" id="sumDownloadBtn" disabled><i class="bi bi-download"></i> TXT</button>
+          </div>
+        </div>
+        <div class="flex-grow-1 p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-50 overflow-auto" style="min-height: 380px;">
+          <div id="sumEmpty" class="text-center py-5 text-white-50">
+            <i class="bi bi-file-earmark-text fs-1 d-block mb-3 text-secondary opacity-50"></i>
+            <p class="small">Enter text and click "Generate Summary" to produce an executive brief.</p>
+          </div>
+          <div id="sumResult" class="d-none text-white-50 font-monospace" style="white-space: pre-wrap; word-break: break-word;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('summarizeForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('sumBtn');
+  const spinner = document.getElementById('sumSpinner');
+  const btnText = document.getElementById('sumBtnText');
+  const resultDiv = document.getElementById('sumResult');
+  const emptyDiv = document.getElementById('sumEmpty');
+  const copyBtn = document.getElementById('sumCopyBtn');
+  const downloadBtn = document.getElementById('sumDownloadBtn');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btnText.textContent = 'Summarizing...';
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/summarize', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Summarization failed');
+    
+    emptyDiv.classList.add('d-none');
+    resultDiv.classList.remove('d-none');
+    resultDiv.textContent = data.output;
+    copyBtn.disabled = false;
+    downloadBtn.disabled = false;
+    showToast('Summary generated successfully!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    btnText.textContent = 'Generate Summary';
+  }
+});
+
+document.getElementById('sumCopyBtn').addEventListener('click', function() {
+  const text = document.getElementById('sumResult').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Summary copied to clipboard!'));
+});
+
+document.getElementById('sumDownloadBtn').addEventListener('click', function() {
+  const text = document.getElementById('sumResult').textContent;
+  downloadBlob(text, 'text/plain', 'summary_output.txt');
+});
+</script>
+{% endblock %}

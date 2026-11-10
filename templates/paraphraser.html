@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Text Paraphraser - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-repeat me-1"></i> SMART REPHRASING
+      </div>
+      <h2 class="fw-bold text-white mb-1">Text Paraphraser</h2>
+      <p class="text-white-50 mb-0">Rewrite text with enhanced fluency, academic rigor, or plain-English simplicity.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm">
+        <form id="paraphraseForm">
+          <label class="form-label text-white fw-bold mb-2">Original Text</label>
+          <textarea id="paraSource" name="source_text" class="form-control custom-textarea bg-dark text-white border-secondary mb-3" rows="8" placeholder="Enter text to rephrase..." required></textarea>
+
+          <div class="mb-4">
+            <label class="form-label text-white-50 small fw-semibold">Paraphrasing Style</label>
+            <select class="form-select bg-dark text-white border-secondary" name="style" id="paraStyle">
+              <option value="Standard" selected>Standard (Natural & Clear)</option>
+              <option value="Fluent & Elegant">Fluent & Elegant (Elevated Vocabulary)</option>
+              <option value="Creative">Creative & Engaging</option>
+              <option value="Simplified (Plain English)">Simplified (Plain English)</option>
+              <option value="Academic">Academic & Formal</option>
+            </select>
+          </div>
+
+          <button type="submit" id="paraBtn" class="btn btn-success w-100 py-2 fw-semibold text-white d-flex align-items-center justify-content-center gap-2">
+            <span class="spinner-border spinner-border-sm d-none" id="paraSpinner"></span>
+            <i class="bi bi-repeat"></i>
+            <span id="paraBtnText">Paraphrase Text</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card feature-card p-4 h-100 shadow-sm d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-white mb-0">Paraphrased Result</h5>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="paraCopyBtn" disabled><i class="bi bi-clipboard"></i> Copy</button>
+            <button type="button" class="btn btn-sm btn-outline-success" id="paraDownloadBtn" disabled><i class="bi bi-download"></i> TXT</button>
+          </div>
+        </div>
+        <div class="flex-grow-1 p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-50 overflow-auto" style="min-height: 380px;">
+          <div id="paraEmpty" class="text-center py-5 text-white-50">
+            <i class="bi bi-repeat fs-1 d-block mb-3 text-secondary opacity-50"></i>
+            <p class="small">Enter text on the left to generate alternative phrasings.</p>
+          </div>
+          <div id="paraResult" class="d-none text-white-50 font-monospace" style="white-space: pre-wrap; word-break: break-word;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('paraphraseForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('paraBtn');
+  const spinner = document.getElementById('paraSpinner');
+  const btnText = document.getElementById('paraBtnText');
+  const resultDiv = document.getElementById('paraResult');
+  const emptyDiv = document.getElementById('paraEmpty');
+  const copyBtn = document.getElementById('paraCopyBtn');
+  const downloadBtn = document.getElementById('paraDownloadBtn');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  btnText.textContent = 'Paraphrasing...';
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/paraphrase', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Paraphrasing failed');
+    
+    emptyDiv.classList.add('d-none');
+    resultDiv.classList.remove('d-none');
+    resultDiv.textContent = data.output;
+    copyBtn.disabled = false;
+    downloadBtn.disabled = false;
+    showToast('Text paraphrased successfully!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    btnText.textContent = 'Paraphrase Text';
+  }
+});
+
+document.getElementById('paraCopyBtn').addEventListener('click', function() {
+  const text = document.getElementById('paraResult').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Paraphrased text copied!'));
+});
+
+document.getElementById('paraDownloadBtn').addEventListener('click', function() {
+  const text = document.getElementById('paraResult').textContent;
+  downloadBlob(text, 'text/plain', 'paraphrased_output.txt');
+});
+</script>
+{% endblock %}

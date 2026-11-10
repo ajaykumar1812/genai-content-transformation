@@ -1,0 +1,264 @@
+================================================================================
+  GEN AI PLATFORM FOR AUTOMATED CONTENT TRANSFORMATION
+  COMPLETE BEGINNER'S EXECUTION GUIDE (WINDOWS 10 & 11)
+================================================================================
+
+This document provides a clear, step-by-step walkthrough to extract, configure,
+and run the Gen AI Platform on Windows 10 or Windows 11.
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. Prerequisites & Python Installation
+2. How to Check Python Using CMD
+3. How to Extract the Project ZIP
+4. How to Open the Project Folder in CMD
+5. Automated Environment Setup (setup.bat)
+6. How to Configure the .env File (API Keys & Settings)
+7. How to Configure MongoDB (Optional)
+8. Starting the Application (run.bat)
+9. Accessing the Platform in Google Chrome or Edge
+10. Using All Application Features
+11. How to Stop the Application Server
+12. How to Restart the Application
+13. Common Troubleshooting & Solutions
+
+================================================================================
+1. PREREQUISITES & PYTHON INSTALLATION
+================================================================================
+To run this application, you need:
+- Windows 10 or Windows 11 (64-bit recommended)
+- Python 3.10, 3.11, 3.12, or 3.13 installed
+- A modern web browser (Google Chrome, Microsoft Edge, Brave, or Firefox)
+- An internet connection for initial dependency installation and AI API calls
+
+IF PYTHON IS NOT INSTALLED:
+1. Go to https://www.python.org/downloads/
+2. Download the Python installer for Windows.
+3. IMPORTANT: When the installer opens, check the box at the bottom:
+   [X] "Add python.exe to PATH"
+4. Click "Install Now" and wait for it to finish.
+
+================================================================================
+2. HOW TO CHECK PYTHON USING CMD
+================================================================================
+1. Press the Windows Key + R, type `cmd`, and press Enter.
+2. In the Command Prompt window, type:
+   python --version
+   (or: py --version)
+3. You should see an output like:
+   Python 3.13.3 (or 3.10.x / 3.11.x / 3.12.x)
+4. Also verify pip:
+   python -m pip --version
+
+If Python displays its version number, your machine is ready!
+
+================================================================================
+3. HOW TO EXTRACT THE PROJECT ZIP
+================================================================================
+1. Locate the file: GenAI_Content_Transformation_Final.zip
+2. Right-click on the ZIP file and select "Extract All..."
+3. Choose a simple folder destination, for example:
+   C:\GenAI_Content_Transformation
+   (or keep the default extraction folder).
+4. Click "Extract".
+5. Ensure you see the extracted folder containing:
+   - app.py
+   - requirements.txt
+   - setup.bat
+   - run.bat
+   - templates/
+   - static/
+   - backend/
+   - README.md
+
+================================================================================
+4. HOW TO OPEN THE PROJECT FOLDER IN CMD
+================================================================================
+Open Command Prompt (CMD) in the project directory using either method:
+
+METHOD A (Fastest):
+1. Open Windows File Explorer and navigate into the extracted folder.
+2. Click in the address bar at the top, type `cmd` and press Enter.
+3. Command Prompt will immediately open directly in that folder.
+
+METHOD B (Using cd command):
+1. Open Command Prompt.
+2. Enter the change directory command (adjust path to where you extracted it):
+   cd /d "C:\GenAI_Content_Transformation"
+   (or if using Antigravity scratch workspace):
+   cd /d "C:\Users\hp\.gemini\antigravity\scratch\GenAI_Content_Transformation"
+
+================================================================================
+5. AUTOMATED ENVIRONMENT SETUP (setup.bat)
+================================================================================
+Run the automated setup script by entering:
+
+   setup.bat
+
+What this script does automatically:
+1. Verifies that Python is installed.
+2. Creates an isolated Python virtual environment inside `venv\`.
+3. Activates the virtual environment.
+4. Upgrades the pip package manager.
+5. Installs all required packages from `requirements.txt`.
+6. Checks for `.env`. If not found, creates a `.env` file from `.env.example`.
+
+You only need to run `setup.bat` ONCE during initial setup.
+
+================================================================================
+6. HOW TO CONFIGURE THE .ENV FILE
+================================================================================
+1. In CMD, open your `.env` configuration file in Notepad:
+   notepad .env
+
+2. The file will open with the following variables:
+   SECRET_KEY=generate-a-secure-random-key-here-for-production
+   MONGO_URI=mongodb://localhost:27017/
+   MONGO_DB=genai_content_transformation
+   GEMINI_API_KEY=PASTE_YOUR_GEMINI_API_KEY_HERE
+   GEMINI_MODEL=gemini-2.5-flash
+   OPENAI_API_KEY=PASTE_YOUR_OPENAI_API_KEY_HERE
+   OPENAI_MODEL=gpt-4o-mini
+
+3. Get an AI API Key:
+   OPTION A: Google Gemini (Recommended - Free & Fast):
+   - Visit: https://aistudio.google.com/app/apikey
+   - Sign in with your Google account and click "Create API Key".
+   - Replace PASTE_YOUR_GEMINI_API_KEY_HERE with your key:
+     GEMINI_API_KEY=AIzaSy...
+
+   OPTION B: OpenAI:
+   - Visit: https://platform.openai.com/api-keys
+   - Copy your secret key and paste it:
+     OPENAI_API_KEY=sk-proj-...
+
+4. Save the file in Notepad (CTRL+S) and close Notepad.
+
+*NOTE: The platform also features an intelligent built-in offline engine. If you do
+not have an API key right now, the platform will still start and run!
+
+================================================================================
+7. HOW TO CONFIGURE MONGODB (OPTIONAL)
+================================================================================
+The application connects to MongoDB at `mongodb://localhost:27017/` by default.
+
+- If you have MongoDB installed:
+  Make sure the Windows service is running. You can check in CMD:
+  sc query MongoDB
+  If it is stopped, start it with:
+  net start MongoDB
+
+- If you DO NOT have MongoDB installed:
+  No problem! The platform includes an automatic, resilient JSON database
+  engine (`data/local_storage.json`). User accounts, dashboard analytics,
+  and transformation histories work 100% out of the box with zero errors.
+
+================================================================================
+8. STARTING THE APPLICATION (run.bat)
+================================================================================
+To start the application, enter in CMD:
+
+   run.bat
+
+The script will:
+1. Activate the `venv` virtual environment.
+2. Verify all core dependencies.
+3. Start the Flask application server.
+4. Display the local URL:
+   http://127.0.0.1:5000
+
+Keep this Command Prompt window open while using the application.
+
+================================================================================
+9. ACCESSING THE APPLICATION IN BROWSER
+================================================================================
+1. Open Google Chrome, Microsoft Edge, or your preferred browser.
+2. In the URL address bar, enter:
+   http://127.0.0.1:5000
+3. Press Enter. The Gen AI Platform home page will load!
+
+================================================================================
+10. USING ALL APPLICATION FEATURES
+================================================================================
+1. USER REGISTRATION & LOGIN:
+   - Click "Create Account".
+   - Enter your name, email, and password.
+   - Upon registration, you are automatically logged in to your private workspace.
+
+2. DASHBOARD:
+   - View total transformations, words processed, system status (DB & AI engine).
+   - Click any quick launchpad tile to jump directly to tools.
+
+3. AI CONTENT STUDIO:
+   - Paste source text or click "Select File" to upload .TXT, .PDF, or .DOCX.
+   - Choose your Output Deliverable (Executive Summary, Blog Post, Business Report,
+     Presentation Deck, Social Media, FAQ Guide, Advisory Bulletin, Key Takeaways).
+   - Customize Target Audience, Tone of Voice, and Detail Level.
+   - Click "Transform Content".
+   - The AI generates your deliverable within seconds.
+
+4. COPY & DOWNLOAD:
+   - Click "Copy" to immediately copy output to your clipboard.
+   - Click "Export" to download as:
+     * Plain Text (.txt)
+     * Microsoft Word (.docx)
+     * PDF Document (.pdf)
+     * PowerPoint Presentation (.pptx)
+
+5. DEDICATED TOOLS:
+   - Text Summarizer: Select Executive, Bullet Points, TL;DR, or Section-by-Section.
+   - Text Paraphraser: Select Standard, Fluent, Creative, Plain English, or Academic.
+   - Tone Transformer: Select Professional, Formal, Casual, Persuasive, Executive.
+   - Grammar Corrector: Proofreads text and lists all corrections made.
+
+6. HISTORY:
+   - Access from the top navigation bar.
+   - Search previous outputs, inspect in popup modals, or delete records.
+
+================================================================================
+11. HOW TO STOP THE SERVER
+================================================================================
+1. Return to the Command Prompt window running `run.bat`.
+2. Press CTRL + C on your keyboard.
+3. When prompted "Terminate batch job (Y/N)?", type `Y` and press Enter.
+
+================================================================================
+12. HOW TO RESTART THE APPLICATION
+================================================================================
+Whenever you want to restart the application later:
+1. Open CMD in the project folder.
+2. Simply execute:
+   run.bat
+3. Refresh `http://127.0.0.1:5000` in your browser.
+
+================================================================================
+13. COMMON TROUBLESHOOTING & SOLUTIONS
+================================================================================
+PROBLEM 1: "python is not recognized as an internal or external command"
+SOLUTION:
+Python is not in your Windows PATH. Reinstall Python and check the box
+"Add Python to PATH" during installation.
+
+PROBLEM 2: "Port 5000 is in use"
+SOLUTION:
+Another Flask instance or application is using port 5000.
+To free port 5000 in CMD:
+  netstat -ano | findstr :5000
+Note the PID number at the far right (e.g. 12345), then run:
+  taskkill /PID 12345 /F
+Or open `app.py`, scroll to the bottom line, and change `port=5000` to `port=5001`.
+
+PROBLEM 3: "Gemini API Quota or Key Error"
+SOLUTION:
+Verify your `GEMINI_API_KEY` in `.env` has no spaces or extra characters.
+Check that Google AI Studio has available quota for your account.
+
+PROBLEM 4: "MongoDB service failed to connect"
+SOLUTION:
+You do not need to install MongoDB; the application automatically falls back to
+the built-in local JSON database engine. All features will work normally!
+
+================================================================================
+  END OF EXECUTION GUIDE
+================================================================================
