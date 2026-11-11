@@ -42,12 +42,13 @@ window.activeGeneratedContent = "";
 window.activeGeneratedTitle = "Gen AI Content Transformation";
 
 // Provider model dictionaries
+// Note: gemini-1.5-flash and gemini-1.5-pro have been removed — they are deprecated.
+// Model identifiers match backend model registry exactly.
 const PROVIDER_MODELS = {
   gemini: [
-    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Fast, Recommended)" },
-    { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Deep Reasoning)" },
-    { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Legacy)" },
-    { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (Legacy)" }
+    { id: "gemini-3.8-flash", name: "Gemini 3.8 Flash (Fast, Recommended)" },
+    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+    { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Deep Reasoning)" }
   ],
   openai: [
     { id: "gpt-4o-mini", name: "GPT-4o Mini (Fast & Cost-Efficient)" },
@@ -56,7 +57,7 @@ const PROVIDER_MODELS = {
     { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo" }
   ],
   auto: [
-    { id: "gemini-2.5-flash", name: "Auto-Selected Default Model" }
+    { id: "gemini-3.8-flash", name: "Auto-Selected Default Model (Gemini 3.8 Flash)" }
   ]
 };
 

@@ -10,7 +10,7 @@ class GeminiService:
 
     def __init__(self, api_key: Optional[str] = None, default_model: Optional[str] = None):
         self.api_key = (api_key or Config.GEMINI_API_KEY or "").strip()
-        self.default_model = (default_model or Config.GEMINI_MODEL or "gemini-2.5-flash").strip()
+        self.default_model = (default_model or Config.GEMINI_MODEL or "gemini-3.8-flash").strip()
         self._client = None
 
     def is_configured(self) -> bool:
@@ -111,7 +111,9 @@ class GeminiService:
                 ) from e
             elif code == 404 or "NOT_FOUND" in msg:
                 raise AIServiceModelError(
-                    f"Selected Gemini model '{target_model}' was not found or is unavailable in your region."
+                    f"Selected Gemini model '{target_model}' was not found or is unavailable in your region. "
+                    f"Supported models include gemini-3.8-flash (recommended default), gemini-2.5-flash, and gemini-2.5-pro. "
+                    f"Please verify model availability with your Gemini API key or update the GEMINI_MODEL setting in .env."
                 ) from e
             elif code in (408, 504) or "DEADLINE_EXCEEDED" in msg:
                 raise AIServiceNetworkError(
@@ -127,7 +129,8 @@ class GeminiService:
         except Exception as e:
             logger.exception("Unexpected error during Gemini generation: %s", str(e))
             msg = str(e)
-            if "connection" in msg.lower() or "socket" in msg.lower():
+            lower_msg = msg.lower()
+            if any(term in lower_msg for term in ("connection", "socket", "getaddrinfo", "dns", "network", "connect")):
                 raise AIServiceNetworkError(
                     "Network error connecting to Google Gemini API servers. Please check your internet connection."
                 ) from e

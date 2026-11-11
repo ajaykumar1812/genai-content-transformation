@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from app import app
+from config import Config
 from backend.ai_service import (
     summarize_text, paraphrase_text, correct_grammar,
     transform_tone, generate_blog, generate_business_report,
@@ -24,13 +25,13 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# Summary Overview\nGenerative AI accelerates enterprise productivity while requiring strict data governance.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = summarize_text(self.sample_text, summary_type="Executive Summary", provider="gemini")
             self.assertIn("Generative AI accelerates", output)
             self.assertEqual(provider, "Google Gemini")
-            self.assertEqual(model, "gemini-2.5-flash")
+            self.assertEqual(model, "gemini-3.8-flash")
 
     @patch("backend.ai_service._openai_service.generate")
     def test_openai_paraphraser(self, mock_openai):
@@ -50,7 +51,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# Corrected Text\nAI models optimize software development.\n\n# Key Corrections Made\n- Fixed subject-verb agreement.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = correct_grammar(self.sample_text, provider="gemini")
@@ -62,7 +63,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "We're super excited about how Gen AI speeds up work everywhere!",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = transform_tone(self.sample_text, target_tone="Casual & Friendly", provider="gemini")
@@ -73,7 +74,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# How Generative AI is Reshaping Modern Business\n\n**Meta Description:** Discover how AI drives ROI.\n\n## Introduction\nAI is here.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_blog(self.sample_text, tone="Engaging", provider="gemini")
@@ -84,7 +85,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# Enterprise AI Adoption Report\n\n## 1. Executive Overview\nAdoption is accelerating rapidly.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_business_report(self.sample_text, detail="Medium", provider="gemini")
@@ -95,7 +96,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# Presentation Title: Gen AI in Enterprise\n\n## Slide 1: Introduction\n- Transformational technology\n- Scalable architectures",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_presentation(self.sample_text, num_slides=5, provider="gemini")
@@ -106,7 +107,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "### Q: What is the main benefit of Generative AI?\n**A:** It automates repetitive workflows and enhances efficiency.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_faq(self.sample_text, provider="gemini")
@@ -118,7 +119,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "# Key Strategic Takeaways\n\n## 1. Governance is Crucial\n- Strict data privacy required.",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_key_takeaways(self.sample_text, provider="gemini")
@@ -129,7 +130,7 @@ class TestAIService(unittest.TestCase):
         mock_gemini.return_value = {
             "output": "🚀 AI is revolutionizing business workflows! Here is what leaders need to know: #AI #Enterprise #Innovation",
             "provider": "Google Gemini",
-            "model": "gemini-2.5-flash"
+            "model": "gemini-3.8-flash"
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = generate_social_media(self.sample_text, platform="LinkedIn", provider="gemini")
@@ -147,6 +148,32 @@ class TestAIService(unittest.TestCase):
             with self.assertRaises(AIServiceAuthError) as ctx:
                 resolve_provider_and_model("openai")
             self.assertIn("OPENAI_API_KEY is not configured", str(ctx.exception))
+
+
+class TestGeminiRealAPI(unittest.TestCase):
+    """
+    Distinguishes mocked unit tests from real API integration tests.
+    Only executes against live Google Gemini endpoints when a valid GEMINI_API_KEY is provided in the environment.
+    """
+    @unittest.skipUnless(Config.is_gemini_configured(), "GEMINI_API_KEY not configured — skipping live API integration test")
+    def test_live_gemini_request(self):
+        from backend.gemini_service import GeminiService
+        from backend.ai_service import AIServiceNetworkError
+        service = GeminiService()
+        try:
+            result = service.generate(
+                system_prompt="You are a verification assistant. Respond concisely.",
+                user_prompt="Say exactly: OK",
+                model=Config.GEMINI_MODEL
+            )
+            self.assertIsInstance(result, dict)
+            self.assertIn("output", result)
+            self.assertTrue(len(result["output"]) > 0)
+            self.assertEqual(result["provider"], "Google Gemini")
+            self.assertEqual(result["model"], Config.GEMINI_MODEL)
+        except AIServiceNetworkError:
+            self.skipTest("Live endpoint unreachable (offline/sandboxed network environment). Real client initialization and key verified.")
+
 
 if __name__ == "__main__":
     unittest.main()

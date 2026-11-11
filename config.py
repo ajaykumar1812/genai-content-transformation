@@ -20,14 +20,15 @@ class Config:
 
     # Google Gemini API
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
     
     # Supported Gemini Models
+    # Note: gemini-1.5-flash and gemini-1.5-pro are deprecated and removed.
+    # Supported: gemini-3.8-flash (recommended default), gemini-2.5-flash, gemini-2.5-pro
     GEMINI_SUPPORTED_MODELS = [
-        {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash (Fast, Recommended)"},
-        {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro (Advanced Reasoning)"},
-        {"id": "gemini-1.5-flash", "name": "Gemini 1.5 Flash (Legacy Speed)"},
-        {"id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro (Legacy Pro)"}
+        {"id": "gemini-3.8-flash", "name": "Gemini 3.8 Flash (Fast, Recommended)"},
+        {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash"},
+        {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro (Advanced Reasoning)"}
     ]
 
     # OpenAI API

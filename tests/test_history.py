@@ -16,7 +16,7 @@ class TestHistory(unittest.TestCase):
             format_type="Summary",
             title="Quantum Summary",
             provider="Google Gemini",
-            model="gemini-2.5-flash"
+            model="gemini-3.8-flash"
         )
         self.assertIsNotNone(rec1.get("id"))
         rec1_id = rec1["id"]

@@ -69,7 +69,7 @@ In contemporary academic, corporate, and research settings, knowledge workers sp
 
 ### 1. AI Content Studio
 - **Dual-Panel Workspace**: Side-by-side view featuring real-time input configuration on the left and rendered Markdown on the right.
-- **Provider & Model Selector**: Choose dynamically between Google Gemini (`gemini-2.5-flash`, `gemini-2.5-pro`) and OpenAI (`gpt-4o-mini`, `gpt-4o`).
+- **Provider & Model Selector**: Choose dynamically between Google Gemini (`gemini-3.8-flash`, `gemini-2.5-flash`, `gemini-2.5-pro`) and OpenAI (`gpt-4o-mini`, `gpt-4o`).
 - **Dynamic Deliverable Types**:
   - Executive Summaries
   - High-Conversion SEO Blog Posts (with Meta Description and Keywords)
@@ -142,7 +142,7 @@ flowchart TD
     end
 
     subgraph External["External Cloud Services"]
-        Gemini["Google Gemini API\n(gemini-2.5-flash / pro)"]
+        Gemini["Google Gemini API\n(gemini-3.8-flash / 2.5)"]
         OpenAI["OpenAI API\n(gpt-4o-mini / gpt-4o)"]
         Atlas[("MongoDB Atlas Cloud\n(Users, History, Settings)")]
     end
@@ -326,7 +326,7 @@ MONGO_DB=genai_content_transformation
 
 # Google Gemini API
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 
 # OpenAI API
 OPENAI_API_KEY=your_openai_api_key_here
@@ -369,7 +369,7 @@ For permanent cloud persistence across server restarts or Render redeployments:
 5. In your `.env` file, set:
    ```ini
    GEMINI_API_KEY=AIzaSy...your_key_here
-   GEMINI_MODEL=gemini-2.5-flash
+   GEMINI_MODEL=gemini-3.8-flash
    ```
 
 ### OpenAI API Setup

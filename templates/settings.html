@@ -47,6 +47,7 @@
             <div class="mb-3">
               <label class="form-label small text-body-secondary fw-semibold">Default Model</label>
               <select class="form-select" name="preferred_model" id="settingsModel">
+                <option value="gemini-3.8-flash" {% if settings.preferred_model == 'gemini-3.8-flash' or not settings.preferred_model %}selected{% endif %}>Gemini 3.8 Flash (Recommended)</option>
                 <option value="gemini-2.5-flash" {% if settings.preferred_model == 'gemini-2.5-flash' %}selected{% endif %}>Gemini 2.5 Flash</option>
                 <option value="gemini-2.5-pro" {% if settings.preferred_model == 'gemini-2.5-pro' %}selected{% endif %}>Gemini 2.5 Pro</option>
                 <option value="gpt-4o-mini" {% if settings.preferred_model == 'gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>

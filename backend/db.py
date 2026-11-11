@@ -221,7 +221,7 @@ class DatabaseManager:
         self,
         user_id: str,
         preferred_provider: str = "gemini",
-        preferred_model: str = "gemini-2.5-flash",
+        preferred_model: str = "gemini-3.8-flash",
         theme: str = "dark"
     ) -> bool:
         if not user_id:
@@ -275,7 +275,7 @@ class DatabaseManager:
         detail: str = "Medium",
         title: Optional[str] = None,
         provider: str = "Google Gemini",
-        model: str = "gemini-2.5-flash"
+        model: str = "gemini-3.8-flash"
     ) -> Dict[str, Any]:
         """Saves a transformation record associated with the authenticated user."""
         now_iso = datetime.now(timezone.utc).isoformat()
