@@ -143,8 +143,11 @@ document.getElementById('clearToneText').addEventListener('click', () => {
   document.getElementById('toneSource').focus();
 });
 
+let isToneSubmitting = false;
 document.getElementById('toneForm').addEventListener('submit', async function(e) {
   e.preventDefault();
+  if (isToneSubmitting) return;
+  isToneSubmitting = true;
   const btn = document.getElementById('toneBtn');
   const spinner = document.getElementById('toneSpinner');
   const icon = document.getElementById('toneIcon');
@@ -161,6 +164,7 @@ document.getElementById('toneForm').addEventListener('submit', async function(e)
   const badge = document.getElementById('toneBadge');
 
   btn.disabled = true;
+  btn.style.pointerEvents = 'none';
   spinner.classList.remove('d-none');
   icon.classList.add('d-none');
   btnText.textContent = 'Adapting Tone with Online AI...';
@@ -192,7 +196,9 @@ document.getElementById('toneForm').addEventListener('submit', async function(e)
     badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
     showToast(err.message, 'error');
   } finally {
+    isToneSubmitting = false;
     btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
     spinner.classList.add('d-none');
     icon.classList.remove('d-none');
     btnText.textContent = 'Transform Tone';

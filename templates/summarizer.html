@@ -142,8 +142,11 @@ document.getElementById('clearSumText').addEventListener('click', () => {
   document.getElementById('sumSource').focus();
 });
 
+let isSumSubmitting = false;
 document.getElementById('summarizeForm').addEventListener('submit', async function(e) {
   e.preventDefault();
+  if (isSumSubmitting) return;
+  isSumSubmitting = true;
   const btn = document.getElementById('sumBtn');
   const spinner = document.getElementById('sumSpinner');
   const icon = document.getElementById('sumIcon');
@@ -160,6 +163,7 @@ document.getElementById('summarizeForm').addEventListener('submit', async functi
   const badge = document.getElementById('sumBadge');
 
   btn.disabled = true;
+  btn.style.pointerEvents = 'none';
   spinner.classList.remove('d-none');
   icon.classList.add('d-none');
   btnText.textContent = 'Contacting AI Engine...';
@@ -194,7 +198,9 @@ document.getElementById('summarizeForm').addEventListener('submit', async functi
     badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
     showToast(err.message, 'error');
   } finally {
+    isSumSubmitting = false;
     btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
     spinner.classList.add('d-none');
     icon.classList.remove('d-none');
     btnText.textContent = 'Generate Online AI Summary';

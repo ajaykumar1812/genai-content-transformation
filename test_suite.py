@@ -2,7 +2,7 @@ import os
 import sys
 import uuid
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from werkzeug.datastructures import FileStorage
 
 # Ensure project root is dynamically added to sys.path
@@ -19,7 +19,8 @@ from backend.ai_service import (
     summarize_text, paraphrase_text, correct_grammar,
     transform_tone, generate_blog, generate_business_report,
     generate_presentation, resolve_provider_and_model,
-    AIServiceAuthError, AIServiceQuotaError, AIServiceNetworkError
+    AIServiceAuthError, AIServiceQuotaError, AIServiceNetworkError,
+    AIServiceModelError, AIServiceInputError
 )
 from backend.document_parser import extract_document_text
 from backend.exporters import export_as_txt, export_as_docx, export_as_pdf, export_as_pptx
@@ -357,13 +358,113 @@ def run_all_tests():
     except Exception as e:
         record_test(30, "Database Failure Handling", "Graceful fallback", f"Error: {e}", False)
 
-    # 31. Live Gemini API Test (Real Key — skipped if GEMINI_API_KEY is not configured)
-    # This is a REAL API test that only runs when a valid key is present.
-    # Mock-based tests (above) pass regardless of key presence.
-    if Config.is_gemini_configured():
+    # 31. Gemini Reliability: Successful Retry on 503 (Recovers on attempt 2)
+    try:
+        from google.genai import errors as genai_errors
+        from backend.gemini_service import GeminiService
+        test_gs = GeminiService(api_key="AIzaSy_mock_test_key", initial_delay=0.001)
+        mock_client = MagicMock()
+        test_gs._client = mock_client
+        mock_resp = MagicMock(text="Recovered successfully after 503 high demand")
+        mock_resp.usage_metadata = MagicMock(prompt_token_count=5, candidates_token_count=10, total_token_count=15)
+        mock_client.models.generate_content.side_effect = [
+            genai_errors.APIError(503, "The model is overloaded. Please try again."),
+            mock_resp
+        ]
+        res = test_gs.generate("System prompt", "User prompt")
+        recovered = res.get("output") == "Recovered successfully after 503 high demand"
+        call_count_ok = mock_client.models.generate_content.call_count == 2
+        record_test(31, "Gemini Retry on 503", "Recovers on 2nd attempt with exponential backoff", f"Calls: {mock_client.models.generate_content.call_count}, Output: '{res.get('output')[:25]}...'", recovered and call_count_ok)
+    except Exception as e:
+        record_test(31, "Gemini Retry on 503", "Recovers on 2nd attempt", f"Error: {e}", False)
+
+    # 32. Gemini Reliability: Successful Retry on 429 Rate Limit (Recovers on attempt 2)
+    try:
+        test_gs = GeminiService(api_key="AIzaSy_mock_test_key", initial_delay=0.001)
+        mock_client = MagicMock()
+        test_gs._client = mock_client
+        mock_resp = MagicMock(text="Recovered successfully after 429 rate limit")
+        mock_resp.usage_metadata = MagicMock(prompt_token_count=5, candidates_token_count=10, total_token_count=15)
+        mock_client.models.generate_content.side_effect = [
+            genai_errors.APIError(429, "Rate limit reached / resource exhausted"),
+            mock_resp
+        ]
+        res = test_gs.generate("System prompt", "User prompt")
+        recovered = res.get("output") == "Recovered successfully after 429 rate limit"
+        call_count_ok = mock_client.models.generate_content.call_count == 2
+        record_test(32, "Gemini Retry on 429", "Recovers on 2nd attempt after rate limit", f"Calls: {mock_client.models.generate_content.call_count}, Output: '{res.get('output')[:25]}...'", recovered and call_count_ok)
+    except Exception as e:
+        record_test(32, "Gemini Retry on 429", "Recovers on 2nd attempt", f"Error: {e}", False)
+
+    # 33. Gemini Reliability: 503 Retries Exhausted (All 3 attempts fail)
+    try:
+        test_gs = GeminiService(api_key="AIzaSy_mock_test_key", initial_delay=0.001)
+        mock_client = MagicMock()
+        test_gs._client = mock_client
+        err_503 = genai_errors.APIError(503, "High demand unavailable")
+        mock_client.models.generate_content.side_effect = [err_503, err_503, err_503]
+        raised_correct = False
+        try:
+            test_gs.generate("System prompt", "User prompt")
+        except AIServiceNetworkError as ne:
+            msg = str(ne)
+            raised_correct = ("503" in msg or "temporarily unavailable" in msg) and "All 3 retry attempts failed" in msg
+        call_count_ok = mock_client.models.generate_content.call_count == 3
+        record_test(33, "Gemini 503 Retries Exhausted", "Raises AIServiceNetworkError after 3 attempts", f"Calls: {mock_client.models.generate_content.call_count}, Raised Correct: {raised_correct}", raised_correct and call_count_ok)
+    except Exception as e:
+        record_test(33, "Gemini 503 Retries Exhausted", "Exhausts retries cleanly", f"Error: {e}", False)
+
+    # 34. Gemini Reliability: 429 Retries Exhausted (All 3 attempts fail)
+    try:
+        test_gs = GeminiService(api_key="AIzaSy_mock_test_key", initial_delay=0.001)
+        mock_client = MagicMock()
+        test_gs._client = mock_client
+        err_429 = genai_errors.APIError(429, "RESOURCE_EXHAUSTED: Quota exceeded")
+        mock_client.models.generate_content.side_effect = [err_429, err_429, err_429]
+        raised_correct = False
+        try:
+            test_gs.generate("System prompt", "User prompt")
+        except AIServiceQuotaError as qe:
+            msg = str(qe)
+            raised_correct = ("429" in msg or "quota" in msg.lower()) and "All 3 retry attempts failed" in msg
+        call_count_ok = mock_client.models.generate_content.call_count == 3
+        record_test(34, "Gemini 429 Retries Exhausted", "Raises AIServiceQuotaError after 3 attempts", f"Calls: {mock_client.models.generate_content.call_count}, Raised Correct: {raised_correct}", raised_correct and call_count_ok)
+    except Exception as e:
+        record_test(34, "Gemini 429 Retries Exhausted", "Exhausts retries cleanly", f"Error: {e}", False)
+
+    # 35. Gemini Reliability: Non-Retry on 401 Auth Error
+    try:
+        test_gs = GeminiService(api_key="AIzaSy_mock_test_key", initial_delay=0.001)
+        mock_client = MagicMock()
+        test_gs._client = mock_client
+        err_401 = genai_errors.APIError(401, "API_KEY_INVALID")
+        mock_client.models.generate_content.side_effect = err_401
+        raised_auth = False
+        try:
+            test_gs.generate("System prompt", "User prompt")
+        except AIServiceAuthError:
+            raised_auth = True
+        no_retry = mock_client.models.generate_content.call_count == 1
+        record_test(35, "Gemini Non-Retry on Auth Error", "Fails immediately on 401 with no retries", f"Calls: {mock_client.models.generate_content.call_count}, Auth Caught: {raised_auth}", raised_auth and no_retry)
+    except Exception as e:
+        record_test(35, "Gemini Non-Retry on Auth Error", "Immediate failure on 401", f"Error: {e}", False)
+
+    # 36. Live Gemini API Test (Real Key)
+    # Strictly follows rule: Do not claim that a live API test passed unless a real request succeeded.
+    import socket
+    has_internet = False
+    try:
+        test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        test_sock.settimeout(1.5)
+        has_internet = (test_sock.connect_ex(("8.8.8.8", 53)) == 0)
+        test_sock.close()
+    except Exception:
+        has_internet = False
+
+    if Config.is_gemini_configured() and has_internet:
         try:
             from backend.gemini_service import GeminiService
-            gs = GeminiService()
+            gs = GeminiService(timeout=10.0)
             target_test_model = Config.GEMINI_MODEL
             result = gs.generate(
                 system_prompt="You are a test assistant. Reply concisely.",
@@ -371,27 +472,26 @@ def run_all_tests():
                 model=target_test_model
             )
             live_output = result.get("output", "")
+            real_succeeded = len(live_output) > 0 and not live_output.startswith("Error")
             record_test(
-                31, "Live Gemini API (Real Key)",
-                f"Non-empty live response from {target_test_model}",
-                f"Output: '{live_output[:40]}...' Provider: {result.get('provider')}",
-                len(live_output) > 0,
-                "REAL API CALL — verified with live API endpoint"
-            )
-        except AIServiceNetworkError as ne:
-            record_test(
-                31, "Live Gemini API (Real Key)",
-                "Live request initialized (Offline/Sandbox network detected)",
-                f"Network Status: {ne}",
-                True,
-                "Notice: Environment network boundary active. Real API client and key verified."
+                36, "Live Gemini API (Real Key)",
+                f"Real response received from {target_test_model}",
+                f"Output: '{live_output[:35]}...' Provider: {result.get('provider')}",
+                real_succeeded,
+                "REAL API CALL verified with live Google endpoints"
             )
         except Exception as e:
-            record_test(31, "Live Gemini API (Real Key)", "Non-empty live response", f"Error: {e}", False,
-                        "REAL API CALL — requires valid GEMINI_API_KEY and active internet connection")
+            record_test(
+                36, "Live Gemini API (Real Key)",
+                "Real response received",
+                f"Live request failed: {e}",
+                False,
+                "Live request did not succeed"
+            )
+    elif not Config.is_gemini_configured():
+        print("[SKIP] Test #36: Live Gemini API (Real Key) -> Skipped: GEMINI_API_KEY is not configured in .env.")
     else:
-        print("[SKIP] Test #31: Live Gemini API (Real Key) → GEMINI_API_KEY not configured. "
-              "Set a valid key in .env to run this real API test.")
+        print("[SKIP] Test #36: Live Gemini API (Real Key) -> Skipped: Outbound network blocked by sandbox isolation. (No live call claimed passed).")
 
     # ==============================================================================
     # PRINT STRUCTURED TEST REPORT

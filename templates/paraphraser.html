@@ -126,8 +126,11 @@ document.getElementById('clearParaText').addEventListener('click', () => {
   document.getElementById('paraSource').focus();
 });
 
+let isParaSubmitting = false;
 document.getElementById('paraphraseForm').addEventListener('submit', async function(e) {
   e.preventDefault();
+  if (isParaSubmitting) return;
+  isParaSubmitting = true;
   const btn = document.getElementById('paraBtn');
   const spinner = document.getElementById('paraSpinner');
   const icon = document.getElementById('paraIcon');
@@ -144,6 +147,7 @@ document.getElementById('paraphraseForm').addEventListener('submit', async funct
   const badge = document.getElementById('paraBadge');
 
   btn.disabled = true;
+  btn.style.pointerEvents = 'none';
   spinner.classList.remove('d-none');
   icon.classList.add('d-none');
   btnText.textContent = 'Rewriting with Online AI...';
@@ -175,7 +179,9 @@ document.getElementById('paraphraseForm').addEventListener('submit', async funct
     badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
     showToast(err.message, 'error');
   } finally {
+    isParaSubmitting = false;
     btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
     spinner.classList.add('d-none');
     icon.classList.remove('d-none');
     btnText.textContent = 'Rewrite Content';

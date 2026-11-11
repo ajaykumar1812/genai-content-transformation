@@ -184,27 +184,41 @@ document.addEventListener('DOMContentLoaded', () => {
     updateModelOptions();
   }
 
-  // Helper to execute studio transformation
+  // Helper to execute studio transformation with duplicate-click protection
+  let isTransforming = false;
+
   async function executeTransformation() {
-    const textVal = sourceText.value.trim();
+    if (isTransforming) {
+      console.warn('Transformation already in progress. Ignoring duplicate submission.');
+      return;
+    }
+
+    const textVal = sourceText ? sourceText.value.trim() : '';
     const hasFile = fileInput && fileInput.files.length > 0;
 
     if (!textVal && !hasFile) {
       showToast('Please enter source text or attach a document.', 'warning');
-      sourceText.focus();
+      if (sourceText) sourceText.focus();
       return;
     }
 
+    isTransforming = true;
     const btn = document.getElementById('transformBtn');
     const spinner = document.getElementById('btnSpinner');
     const icon = document.getElementById('btnIcon');
     const btnText = document.getElementById('btnText');
 
-    btn.disabled = true;
-    if (regenerateBtn) regenerateBtn.disabled = true;
-    spinner.classList.remove('d-none');
-    icon.classList.add('d-none');
-    btnText.textContent = 'Generating with Online AI...';
+    if (btn) {
+      btn.disabled = true;
+      btn.style.pointerEvents = 'none';
+    }
+    if (regenerateBtn) {
+      regenerateBtn.disabled = true;
+      regenerateBtn.style.pointerEvents = 'none';
+    }
+    if (spinner) spinner.classList.remove('d-none');
+    if (icon) icon.classList.add('d-none');
+    if (btnText) btnText.textContent = 'Generating with Online AI...';
 
     // UI state transitions
     if (errorAlert) errorAlert.classList.add('d-none');
@@ -264,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
           errorTitle.textContent = 'API Quota Exceeded';
           errorAction.classList.remove('d-none');
         } else if (err.category === 'network_error') {
-          errorTitle.textContent = 'Network / Timeout Error';
+          errorTitle.textContent = 'Network / Temporary Service Unavailable';
           errorAction.classList.add('d-none');
         } else {
           errorTitle.textContent = 'AI Transformation Failed';
@@ -280,11 +294,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showToast(err.message, 'error');
     } finally {
-      btn.disabled = false;
-      if (regenerateBtn && window.activeGeneratedContent) regenerateBtn.disabled = false;
-      spinner.classList.add('d-none');
-      icon.classList.remove('d-none');
-      btnText.textContent = 'Transform Content with Online AI';
+      isTransforming = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.style.pointerEvents = 'auto';
+      }
+      if (regenerateBtn && window.activeGeneratedContent) {
+        regenerateBtn.disabled = false;
+        regenerateBtn.style.pointerEvents = 'auto';
+      }
+      if (spinner) spinner.classList.add('d-none');
+      if (icon) icon.classList.remove('d-none');
+      if (btnText) btnText.textContent = 'Transform Content with Online AI';
     }
   }
 

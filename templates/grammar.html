@@ -114,8 +114,11 @@ document.getElementById('clearGrammarText').addEventListener('click', () => {
   document.getElementById('grammarSource').focus();
 });
 
+let isGrammarSubmitting = false;
 document.getElementById('grammarForm').addEventListener('submit', async function(e) {
   e.preventDefault();
+  if (isGrammarSubmitting) return;
+  isGrammarSubmitting = true;
   const btn = document.getElementById('grammarBtn');
   const spinner = document.getElementById('grammarSpinner');
   const icon = document.getElementById('grammarIcon');
@@ -132,6 +135,7 @@ document.getElementById('grammarForm').addEventListener('submit', async function
   const badge = document.getElementById('grammarBadge');
 
   btn.disabled = true;
+  btn.style.pointerEvents = 'none';
   spinner.classList.remove('d-none');
   icon.classList.add('d-none');
   btnText.textContent = 'Proofreading with Online AI...';
@@ -163,7 +167,9 @@ document.getElementById('grammarForm').addEventListener('submit', async function
     badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
     showToast(err.message, 'error');
   } finally {
+    isGrammarSubmitting = false;
     btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
     spinner.classList.add('d-none');
     icon.classList.remove('d-none');
     btnText.textContent = 'Inspect & Fix Grammar';

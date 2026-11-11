@@ -31,6 +31,12 @@ class Config:
         {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro (Advanced Reasoning)"}
     ]
 
+    # Gemini Reliability & Retry Configuration (Exponential Backoff)
+    GEMINI_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES", 3))
+    GEMINI_RETRY_INITIAL_DELAY = float(os.getenv("GEMINI_RETRY_INITIAL_DELAY", 1.0))
+    GEMINI_RETRY_BACKOFF_FACTOR = float(os.getenv("GEMINI_RETRY_BACKOFF_FACTOR", 2.0))
+    GEMINI_REQUEST_TIMEOUT = float(os.getenv("GEMINI_REQUEST_TIMEOUT", 30.0))
+
     # OpenAI API
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
