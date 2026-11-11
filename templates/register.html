@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0 bg-body-tertiary p-4 p-md-5 rounded-4">
+        <div class="text-center mb-4">
+          <div class="brand-badge mx-auto mb-3 d-inline-flex align-items-center justify-content-center shadow-sm">
+            <i class="bi bi-person-plus fs-4"></i>
+          </div>
+          <h3 class="fw-bold tracking-tight">Create Workspace Account</h3>
+          <p class="text-body-secondary small">Join the Gen AI Content Transformation Platform</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}">
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary fw-semibold">Full Name</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" name="name" class="form-control" placeholder="John Doe" value="{{ name or '' }}" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary fw-semibold">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control" placeholder="name@example.com" value="{{ email or '' }}" required>
+            </div>
+            <small class="text-body-secondary">Used for secure authentication and isolating your history.</small>
+          </div>
+
+          <div class="row g-2 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label small text-body-secondary fw-semibold">Password</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                <input type="password" name="password" class="form-control" placeholder="At least 6 chars" minlength="6" required>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small text-body-secondary fw-semibold">Confirm Password</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Repeat password" minlength="6" required>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+            <span>Register &amp; Open Workspace</span> <i class="bi bi-arrow-right-short fs-5"></i>
+          </button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top">
+          <span class="text-body-secondary small">Already have an account?</span>
+          <a href="{{ url_for('login') }}" class="text-primary text-decoration-none small fw-semibold ms-1">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

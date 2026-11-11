@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Document Hub - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-file-earmark-arrow-up me-1"></i> INGESTION &amp; PARSING ENGINE
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">Document Processing Hub</h2>
+      <p class="text-body-secondary mb-0">Upload enterprise documents, extract clean structured text, inspect preview, and send to the AI Content Studio.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <a href="{{ url_for('studio') }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-magic me-1"></i> Open AI Studio
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Upload Zone & Processing Options -->
+    <div class="col-lg-5">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Upload Document</h5>
+
+          <form id="docUploadForm" enctype="multipart/form-data">
+            <div class="upload-dropzone p-4 rounded-3 text-center border border-dashed mb-3" id="docDropZone">
+              <i class="bi bi-cloud-arrow-up fs-1 text-primary d-block mb-2"></i>
+              <h6 class="fw-semibold mb-1" id="docNameDisplay">Drag &amp; drop document or browse files</h6>
+              <p class="text-body-secondary small mb-3">Supports .PDF, .DOCX, and .TXT files (Up to 15 MB)</p>
+              <input type="file" id="docFileInput" name="file" accept=".txt,.pdf,.docx" class="d-none">
+              <button type="button" class="btn btn-sm btn-primary px-3" onclick="document.getElementById('docFileInput').click()">
+                <i class="bi bi-folder2-open me-1"></i> Select Document
+              </button>
+            </div>
+
+            <!-- Pre-processing features info -->
+            <div class="card bg-body border-0 p-3 mb-3 small">
+              <span class="fw-bold mb-2 d-block text-primary"><i class="bi bi-gear-fill me-1"></i> Automated Parsing Pipelines</span>
+              <ul class="list-unstyled mb-0 text-body-secondary">
+                <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> <strong>Header &amp; Footer Removal:</strong> Strips repeating page headers.</li>
+                <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> <strong>Artifact Cleanup:</strong> Removes isolated page numbers.</li>
+                <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> <strong>Structure Preservation:</strong> Keeps headings, lists &amp; sections.</li>
+                <li><i class="bi bi-info-circle text-info me-1"></i> <strong>Scanned PDF Alert:</strong> Image-only PDFs flagged for OCR.</li>
+              </ul>
+            </div>
+
+            <button type="submit" id="extractBtn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+              <span class="spinner-border spinner-border-sm d-none" id="extractSpinner" role="status"></span>
+              <i class="bi bi-cpu" id="extractIcon"></i>
+              <span id="extractBtnText">Extract &amp; Inspect Content</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Extracted Text Preview & Send Actions -->
+    <div class="col-lg-7">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0">Extracted Content Preview</h5>
+              <small class="text-body-secondary" id="docMeta">No document loaded yet</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="copyExtractedBtn" disabled title="Copy raw extracted text">
+                <i class="bi bi-clipboard me-1"></i> Copy
+              </button>
+              <button type="button" class="btn btn-sm btn-primary" id="sendToStudioBtn" disabled title="Load extracted text into AI Studio">
+                <i class="bi bi-magic me-1"></i> Send to Studio
+              </button>
+            </div>
+          </div>
+
+          <!-- Document Error Alert -->
+          <div id="docErrorAlert" class="alert alert-danger d-none shadow-sm mb-3" role="alert">
+            <div class="d-flex gap-2">
+              <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+              <div>
+                <strong class="d-block">Extraction Error</strong>
+                <span class="small" id="docErrorMessage">Error message here.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty Preview State -->
+          <div id="docEmptyState" class="text-center py-5 my-auto text-body-secondary">
+            <i class="bi bi-file-earmark-text display-4 text-primary opacity-50 mb-3 d-block"></i>
+            <h6 class="fw-semibold mb-1">Upload a Document to Inspect Extracted Text</h6>
+            <p class="small text-body-secondary mb-0">PDF, Word, or plain text will be extracted and previewed here with clean paragraphs.</p>
+          </div>
+
+          <!-- Preview Content Box -->
+          <div id="docPreviewContainer" class="d-none flex-grow-1 p-3 rounded-3 border bg-body overflow-auto" style="min-height: 380px; max-height: 550px;">
+            <pre id="docExtractedText" class="mb-0 text-body font-monospace small" style="white-space: pre-wrap; word-break: break-word;"></pre>
+          </div>
+
+          <!-- Statistics Bar -->
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-body-secondary">
+            <span id="docStats">0 characters &bull; 0 words</span>
+            <span class="badge bg-secondary-subtle text-secondary border" id="docStatusBadge">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('docUploadForm');
+  const fileInput = document.getElementById('docFileInput');
+  const dropZone = document.getElementById('docDropZone');
+  const nameDisplay = document.getElementById('docNameDisplay');
+  const extractBtn = document.getElementById('extractBtn');
+  const spinner = document.getElementById('extractSpinner');
+  const icon = document.getElementById('extractIcon');
+  const btnText = document.getElementById('extractBtnText');
+  const errorAlert = document.getElementById('docErrorAlert');
+  const errorMsg = document.getElementById('docErrorMessage');
+  const emptyState = document.getElementById('docEmptyState');
+  const previewContainer = document.getElementById('docPreviewContainer');
+  const extractedText = document.getElementById('docExtractedText');
+  const docMeta = document.getElementById('docMeta');
+  const docStats = document.getElementById('docStats');
+  const statusBadge = document.getElementById('docStatusBadge');
+  const copyBtn = document.getElementById('copyExtractedBtn');
+  const sendBtn = document.getElementById('sendToStudioBtn');
+
+  let currentExtractedText = "";
+
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        nameDisplay.textContent = e.dataTransfer.files[0].name;
+      }
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        nameDisplay.textContent = fileInput.files[0].name;
+      }
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!fileInput.files.length) {
+      showToast('Please select a document file (.pdf, .docx, .txt).', 'warning');
+      return;
+    }
+
+    extractBtn.disabled = true;
+    spinner.classList.remove('d-none');
+    icon.classList.add('d-none');
+    btnText.textContent = 'Parsing Document...';
+    errorAlert.classList.add('d-none');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      const response = await fetch('/api/documents/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to parse document.');
+      }
+
+      currentExtractedText = data.text;
+      emptyState.classList.add('d-none');
+      previewContainer.classList.remove('d-none');
+      extractedText.textContent = data.text;
+
+      docMeta.textContent = `${data.filename} · Successfully Parsed`;
+      docStats.textContent = `${data.character_count} characters • ${data.word_count} words`;
+      statusBadge.textContent = 'Extracted';
+      statusBadge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+
+      copyBtn.disabled = false;
+      sendBtn.disabled = false;
+      showToast('Document parsed successfully!');
+    } catch (err) {
+      errorAlert.classList.remove('d-none');
+      errorMsg.textContent = err.message;
+      statusBadge.textContent = 'Failed';
+      statusBadge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+      showToast(err.message, 'error');
+    } finally {
+      extractBtn.disabled = false;
+      spinner.classList.add('d-none');
+      icon.classList.remove('d-none');
+      btnText.textContent = 'Extract & Inspect Content';
+    }
+  });
+
+  copyBtn.addEventListener('click', () => {
+    if (!currentExtractedText) return;
+    navigator.clipboard.writeText(currentExtractedText).then(() => {
+      showToast('Extracted text copied to clipboard!');
+    });
+  });
+
+  sendBtn.addEventListener('click', () => {
+    if (!currentExtractedText) return;
+    sessionStorage.setItem('studio_source_prefill', currentExtractedText);
+    window.location.href = "{{ url_for('studio') }}";
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome Banner -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 p-4 rounded-4 dashboard-hero shadow-sm">
+    <div>
+      <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-person-badge me-1"></i> ACTIVE WORKSPACE &bull; ONLINE AI
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">Welcome back, {{ current_user.name }}!</h2>
+      <p class="text-body-secondary mb-0">Transform, summarize, paraphrase and generate executive content with verified AI models.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('studio') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+        <i class="bi bi-plus-circle"></i> <span>Open AI Studio</span>
+      </a>
+      <a href="{{ url_for('documents') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-cloud-arrow-up"></i> <span>Document Hub</span>
+      </a>
+      <a href="{{ url_for('history') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history"></i> <span>History</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Statistics Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-body-secondary small text-uppercase fw-semibold">Transformations</span>
+            <h3 class="fw-bold my-1">{{ stats.total_transformations }}</h3>
+            <small class="text-success"><i class="bi bi-check2-circle"></i> Logged deliverables</small>
+          </div>
+          <div class="stat-icon bg-primary bg-opacity-10 text-primary p-2 rounded-3"><i class="bi bi-cpu fs-4"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-body-secondary small text-uppercase fw-semibold">Words Generated</span>
+            <h3 class="fw-bold my-1">{{ "{:,}".format(stats.words_transformed) }}</h3>
+            <small class="text-info"><i class="bi bi-arrow-up-right"></i> High-impact content</small>
+          </div>
+          <div class="stat-icon bg-info bg-opacity-10 text-info p-2 rounded-3"><i class="bi bi-file-text fs-4"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-body-secondary small text-uppercase fw-semibold">Time Saved</span>
+            <h3 class="fw-bold my-1">{{ stats.time_saved_hours }} <span class="fs-6 fw-normal text-body-secondary">hrs</span></h3>
+            <small class="text-warning"><i class="bi bi-lightning-charge"></i> Workflow acceleration</small>
+          </div>
+          <div class="stat-icon bg-warning bg-opacity-10 text-warning p-2 rounded-3"><i class="bi bi-clock-history fs-4"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="text-body-secondary small text-uppercase fw-semibold">Storage Engine</span>
+            <h5 class="fw-bold my-1 text-truncate">{{ 'MongoDB Atlas' if system_status.mongodb_connected else 'Local Storage' }}</h5>
+            <small class="{% if system_status.mongodb_connected %}text-success{% else %}text-warning{% endif %}">
+              <i class="bi bi-database"></i> {{ 'Cloud persistent' if system_status.mongodb_connected else 'Local JSON fallback' }}
+            </small>
+          </div>
+          <div class="stat-icon bg-success bg-opacity-10 text-success p-2 rounded-3"><i class="bi bi-database-check fs-4"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Tool Launchpad -->
+  <div class="card shadow-sm border-0 bg-body-tertiary p-4 mb-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-grid-fill text-primary"></i> <span>Automated Content Engines</span>
+    </h5>
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('studio') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-primary mb-2"><i class="bi bi-magic fs-3"></i></div>
+          <div class="fw-bold text-body small">AI Studio</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">Central Workspace</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('summarizer') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-info mb-2"><i class="bi bi-file-earmark-text fs-3"></i></div>
+          <div class="fw-bold text-body small">Summarizer</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">Briefs &amp; Exec</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('paraphraser') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-warning mb-2"><i class="bi bi-repeat fs-3"></i></div>
+          <div class="fw-bold text-body small">Paraphraser</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">5 Unique Styles</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('tone') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-danger mb-2"><i class="bi bi-chat-quote fs-3"></i></div>
+          <div class="fw-bold text-body small">Tone Shift</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">9 Voice Modes</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('grammar') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-success mb-2"><i class="bi bi-spellcheck fs-3"></i></div>
+          <div class="fw-bold text-body small">Grammar</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">Fix &amp; Polish</small>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url_for('documents') }}" class="tool-tile text-center p-3 rounded-3 d-block text-decoration-none border bg-body h-100">
+          <div class="tile-icon text-primary mb-2"><i class="bi bi-cloud-arrow-up fs-3"></i></div>
+          <div class="fw-bold text-body small">Document Hub</div>
+          <small class="text-body-secondary d-block" style="font-size: 0.75rem;">PDF, DOCX, TXT</small>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transformations Table -->
+  <div class="card shadow-sm border-0 bg-body-tertiary p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history text-primary"></i> <span>Recent Transformations</span>
+      </h5>
+      <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-secondary">View All History</a>
+    </div>
+
+    {% if stats.recent_items %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr class="text-body-secondary small text-uppercase">
+            <th>Deliverable</th>
+            <th>Type</th>
+            <th>Engine</th>
+            <th>Words</th>
+            <th>Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in stats.recent_items %}
+          <tr>
+            <td>
+              <div class="fw-semibold text-truncate" style="max-width: 250px;">{{ item.title or item.format }}</div>
+              <small class="text-body-secondary text-truncate d-block" style="max-width: 250px;">{{ item.source[:60] }}...</small>
+            </td>
+            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ item.format }}</span></td>
+            <td><small class="text-body-secondary">{{ item.provider or 'Online AI' }}</small></td>
+            <td><small>{{ item.words_output }}</small></td>
+            <td><small class="text-body-secondary">{{ item.created_at[:10] }}</small></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-secondary" onclick="viewHistoryItem('{{ item.id }}')">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-body-secondary">
+      <i class="bi bi-inbox fs-1 d-block mb-2 text-primary opacity-50"></i>
+      <h6 class="fw-semibold mb-1">No Transformations Recorded Yet</h6>
+      <p class="small mb-3">Launch the AI Studio to start transforming your documents.</p>
+      <a href="{{ url_for('studio') }}" class="btn btn-sm btn-primary">Start First Transformation</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- History Detail Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalTitle">Deliverable Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge bg-primary-subtle text-primary" id="modalFormat"></span>
+          <span class="badge bg-secondary-subtle text-secondary" id="modalTone"></span>
+          <small class="text-body-secondary ms-auto" id="modalDate"></small>
+        </div>
+        <div class="p-3 rounded bg-body border markdown-output" id="modalContent" style="max-height: 400px; overflow-y: auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="modalCopyBtn"><i class="bi bi-clipboard me-1"></i> Copy</button>
+        <button type="button" class="btn btn-sm btn-primary" id="modalDownloadBtn"><i class="bi bi-download me-1"></i> Download TXT</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

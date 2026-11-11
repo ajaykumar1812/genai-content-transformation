@@ -1,0 +1,184 @@
+/* ==============================================================================
+   GEN AI PLATFORM - COMPREHENSIVE SAAS STYLESHEET
+   Supports Light & Dark Modes via Bootstrap 5 data-bs-theme
+   ============================================================================== */
+
+:root {
+  --brand-primary: #3b82f6;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --brand-gradient-text: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+}
+
+[data-bs-theme="light"] {
+  --brand-bg: #f8fafc;
+  --brand-card-bg: #ffffff;
+  --brand-border: #e2e8f0;
+  --brand-dropzone-bg: #f1f5f9;
+}
+
+[data-bs-theme="dark"] {
+  --brand-bg: #0b0f19;
+  --brand-card-bg: #111827;
+  --brand-border: #1f2937;
+  --brand-dropzone-bg: #1e293b40;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Glassmorphism Navbar */
+.glass-navbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: var(--bs-body-bg);
+}
+
+.brand-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--brand-gradient);
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.text-primary-gradient {
+  background: var(--brand-gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.user-avatar-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.system-badge {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Dashboard Hero */
+.dashboard-hero {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+  border: 1px solid var(--bs-border-color);
+}
+
+/* Tool Tiles */
+.tool-tile {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-tile:hover {
+  border-color: var(--brand-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+}
+
+/* Upload Dropzone */
+.upload-dropzone {
+  background-color: var(--brand-dropzone-bg);
+  border-color: var(--bs-border-color) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.upload-dropzone.dragover {
+  border-color: var(--brand-primary) !important;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Custom Textareas */
+.custom-textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* Markdown Formatted Output Container */
+.markdown-output h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--bs-body-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  padding-bottom: 0.4rem;
+}
+
+.markdown-output h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--brand-primary);
+}
+
+.markdown-output h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.markdown-output p {
+  margin-bottom: 0.75rem;
+  line-height: 1.65;
+}
+
+.markdown-output ul, .markdown-output ol {
+  padding-left: 1.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-output li {
+  margin-bottom: 0.35rem;
+  line-height: 1.55;
+}
+
+.markdown-output blockquote {
+  border-left: 3px solid var(--brand-primary);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--bs-secondary-color);
+  font-style: italic;
+}
+
+.markdown-output pre {
+  background-color: var(--bs-tertiary-bg);
+  padding: 0.85rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+.markdown-output code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}

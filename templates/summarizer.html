@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}AI Summarizer - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-file-earmark-text me-1"></i> INTELLIGENT COMPRESSION &bull; ONLINE AI
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">AI Summarizer</h2>
+      <p class="text-body-secondary mb-0">Condense long articles, research papers, reports, and documentation into crisp, high-impact summaries.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <a href="{{ url_for('documents') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-cloud-arrow-up me-1"></i> Ingest Document
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Source & Options -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+        <div class="card-body p-4">
+          <form id="summarizeForm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Source Text</label>
+              <button type="button" class="btn btn-link btn-sm text-body-secondary text-decoration-none p-0" id="clearSumText">
+                <i class="bi bi-x-circle me-1"></i> Clear
+              </button>
+            </div>
+            <textarea id="sumSource" name="source_text" class="form-control font-monospace custom-textarea mb-3" rows="8" placeholder="Paste source text or research notes here..." required></textarea>
+
+            <!-- Provider & Model Selectors -->
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label small text-body-secondary fw-semibold">AI Provider</label>
+                <select class="form-select form-select-sm" name="provider" id="sumProvider">
+                  <option value="gemini" {% if user_settings.preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini</option>
+                  <option value="openai" {% if user_settings.preferred_provider == 'openai' %}selected{% endif %}>OpenAI (ChatGPT)</option>
+                  <option value="auto">Auto-Select</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small text-body-secondary fw-semibold">Summary Structure</label>
+                <select class="form-select form-select-sm" name="summary_type" id="sumType">
+                  <option value="Executive Summary" selected>Executive Summary</option>
+                  <option value="Bullet-point">Bullet-point Briefing</option>
+                  <option value="Short">Short Summary (TL;DR)</option>
+                  <option value="Medium">Medium Balanced Summary</option>
+                  <option value="Detailed">Comprehensive Detailed Breakdown</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small text-body-secondary fw-semibold">Length &amp; Detail</label>
+              <select class="form-select form-select-sm" name="detail" id="sumDetail">
+                <option value="Short">Concise / High-Level</option>
+                <option value="Medium" selected>Medium / Balanced</option>
+                <option value="Detailed">In-depth / Detailed</option>
+              </select>
+            </div>
+
+            <button type="submit" id="sumBtn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+              <span class="spinner-border spinner-border-sm d-none" id="sumSpinner"></span>
+              <i class="bi bi-stars" id="sumIcon"></i>
+              <span id="sumBtnText">Generate Online AI Summary</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Summary Output -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0">Summarized Deliverable</h5>
+              <small class="text-body-secondary" id="sumMeta">Awaiting input</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-primary" id="sumCopyBtn" disabled><i class="bi bi-clipboard me-1"></i> Copy</button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sumExportDropdown" data-bs-toggle="dropdown" disabled>
+                  <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                  <li><button class="dropdown-item" onclick="exportDedicatedContent('txt')"><i class="bi bi-filetype-txt text-primary me-2"></i>Plain Text (.txt)</button></li>
+                  <li><button class="dropdown-item" onclick="exportDedicatedContent('docx')"><i class="bi bi-file-earmark-word text-info me-2"></i>Word Document (.docx)</button></li>
+                  <li><button class="dropdown-item" onclick="exportDedicatedContent('pdf')"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Document (.pdf)</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="sumErrorAlert" class="alert alert-danger d-none shadow-sm mb-3" role="alert">
+            <div class="d-flex gap-2">
+              <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="d-block" id="sumErrorTitle">Summarization Error</strong>
+                <span class="small" id="sumErrorMsg">Error message here.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="sumEmpty" class="text-center py-5 my-auto text-body-secondary">
+            <i class="bi bi-file-earmark-text display-4 text-info opacity-50 mb-3 d-block"></i>
+            <h6 class="fw-semibold mb-1">Executive Summary Will Appear Here</h6>
+            <p class="small text-body-secondary mb-0">Paste source text on the left and select your summary format.</p>
+          </div>
+
+          <!-- Markdown Result -->
+          <div id="sumResultContainer" class="d-none p-3 rounded-3 border bg-body overflow-auto flex-grow-1" style="min-height: 380px; max-height: 550px;">
+            <div id="sumResult" class="markdown-output" style="word-break: break-word;"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-body-secondary">
+            <span id="sumStats">0 characters &bull; 0 words</span>
+            <span class="badge bg-secondary-subtle text-secondary border" id="sumBadge">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.dedicatedOutput = "";
+window.dedicatedTitle = "AI Summary";
+
+document.getElementById('clearSumText').addEventListener('click', () => {
+  document.getElementById('sumSource').value = '';
+  document.getElementById('sumSource').focus();
+});
+
+document.getElementById('summarizeForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('sumBtn');
+  const spinner = document.getElementById('sumSpinner');
+  const icon = document.getElementById('sumIcon');
+  const btnText = document.getElementById('sumBtnText');
+  const resultDiv = document.getElementById('sumResult');
+  const container = document.getElementById('sumResultContainer');
+  const emptyDiv = document.getElementById('sumEmpty');
+  const copyBtn = document.getElementById('sumCopyBtn');
+  const exportDropdown = document.getElementById('sumExportDropdown');
+  const errorAlert = document.getElementById('sumErrorAlert');
+  const errorMsg = document.getElementById('sumErrorMsg');
+  const meta = document.getElementById('sumMeta');
+  const stats = document.getElementById('sumStats');
+  const badge = document.getElementById('sumBadge');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  icon.classList.add('d-none');
+  btnText.textContent = 'Contacting AI Engine...';
+  errorAlert.classList.add('d-none');
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/summarize', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Summarization request failed.');
+
+    window.dedicatedOutput = data.output;
+    window.dedicatedTitle = "AI Summary Brief";
+
+    emptyDiv.classList.add('d-none');
+    container.classList.remove('d-none');
+    resultDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.output) : data.output;
+
+    copyBtn.disabled = false;
+    exportDropdown.disabled = false;
+
+    meta.textContent = `${data.engine} · Just Now`;
+    stats.textContent = `${data.output.length} characters • ${data.words_output} words`;
+    badge.textContent = data.engine;
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+
+    showToast('Summary generated successfully!');
+  } catch (err) {
+    errorAlert.classList.remove('d-none');
+    errorMsg.textContent = err.message;
+    badge.textContent = 'Error';
+    badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    icon.classList.remove('d-none');
+    btnText.textContent = 'Generate Online AI Summary';
+  }
+});
+
+document.getElementById('sumCopyBtn').addEventListener('click', () => {
+  if (!window.dedicatedOutput) return;
+  navigator.clipboard.writeText(window.dedicatedOutput).then(() => showToast('Copied to clipboard!'));
+});
+
+async function exportDedicatedContent(formatType) {
+  if (!window.dedicatedOutput) return;
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: window.dedicatedOutput, type: formatType, title: window.dedicatedTitle })
+    });
+    if (!res.ok) throw new Error('Export request failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `summary.${formatType}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`${formatType.toUpperCase()} exported successfully!`);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}User Settings - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-sliders me-1"></i> CONFIGURATION &amp; PREFERENCES
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">User Profile &amp; Settings</h2>
+      <p class="text-body-secondary mb-0">Configure your default AI model provider, application theme, and inspect active API status.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- User Profile & AI Preferences Form -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0 bg-body-tertiary mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-person-circle me-2 text-primary"></i>Profile Details</h5>
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary fw-semibold">Account Name</label>
+            <input type="text" class="form-control" value="{{ user.name }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary fw-semibold">Email Address</label>
+            <input type="email" class="form-control" value="{{ user.email }}" disabled>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 bg-body-tertiary">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-cpu-fill me-2 text-primary"></i>AI Engine Preferences</h5>
+          <form method="POST" action="{{ url_for('settings') }}">
+            <div class="mb-3">
+              <label class="form-label small text-body-secondary fw-semibold">Preferred AI Provider</label>
+              <select class="form-select" name="preferred_provider" id="settingsProvider">
+                <option value="gemini" {% if settings.preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini (Recommended)</option>
+                <option value="openai" {% if settings.preferred_provider == 'openai' %}selected{% endif %}>OpenAI (ChatGPT)</option>
+              </select>
+              <small class="text-body-secondary">Sets your default engine across the AI Studio and specialized transformation tools.</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small text-body-secondary fw-semibold">Default Model</label>
+              <select class="form-select" name="preferred_model" id="settingsModel">
+                <option value="gemini-2.5-flash" {% if settings.preferred_model == 'gemini-2.5-flash' %}selected{% endif %}>Gemini 2.5 Flash</option>
+                <option value="gemini-2.5-pro" {% if settings.preferred_model == 'gemini-2.5-pro' %}selected{% endif %}>Gemini 2.5 Pro</option>
+                <option value="gpt-4o-mini" {% if settings.preferred_model == 'gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
+                <option value="gpt-4o" {% if settings.preferred_model == 'gpt-4o' %}selected{% endif %}>GPT-4o</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small text-body-secondary fw-semibold">Visual Interface Theme</label>
+              <select class="form-select" name="theme" id="settingsTheme">
+                <option value="dark" {% if settings.theme == 'dark' %}selected{% endif %}>Dark Mode (Default)</option>
+                <option value="light" {% if settings.theme == 'light' %}selected{% endif %}>Light Mode</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary fw-semibold px-4">
+              <i class="bi bi-save me-1"></i> Save Preferences
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Real-time API & Database Readiness Monitor -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm border-0 bg-body-tertiary mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-shield-check me-2 text-success"></i>Environment Readiness</h5>
+
+          <div class="list-group list-group-flush rounded-3 border">
+            <!-- Gemini Status -->
+            <div class="list-group-item d-flex justify-content-between align-items-center bg-body">
+              <div>
+                <strong class="d-block small">Google Gemini API</strong>
+                <small class="text-body-secondary">{{ system_status.gemini_model }}</small>
+              </div>
+              {% if system_status.gemini_available %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                  <i class="bi bi-check-circle-fill me-1"></i> Ready
+                </span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                  <i class="bi bi-x-circle-fill me-1"></i> Key Missing
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- OpenAI Status -->
+            <div class="list-group-item d-flex justify-content-between align-items-center bg-body">
+              <div>
+                <strong class="d-block small">OpenAI API (GPT)</strong>
+                <small class="text-body-secondary">{{ system_status.openai_model }}</small>
+              </div>
+              {% if system_status.openai_available %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                  <i class="bi bi-check-circle-fill me-1"></i> Ready
+                </span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                  <i class="bi bi-x-circle-fill me-1"></i> Key Missing
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Database Status -->
+            <div class="list-group-item d-flex justify-content-between align-items-center bg-body">
+              <div>
+                <strong class="d-block small">Database Storage</strong>
+                <small class="text-body-secondary">{{ 'MongoDB Atlas' if system_status.mongodb_connected else 'Local Storage Fallback' }}</small>
+              </div>
+              {% if system_status.mongodb_connected %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                  <i class="bi bi-cloud-check-fill me-1"></i> Atlas Connected
+                </span>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                  <i class="bi bi-hdd-fill me-1"></i> Local Mode
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Configuration Quick Guide -->
+          <div class="mt-4 p-3 rounded-3 bg-body border small">
+            <span class="fw-bold d-block text-primary mb-1"><i class="bi bi-info-circle me-1"></i> How to Add API Keys</span>
+            <p class="text-body-secondary mb-2">
+              Keys are loaded safely from your project's <code>.env</code> file:
+            </p>
+            <pre class="bg-body-tertiary p-2 rounded mb-2 font-monospace small">GEMINI_API_KEY=your_gemini_key
+OPENAI_API_KEY=your_openai_key</pre>
+            <small class="text-body-secondary d-block">
+              Get free Gemini API keys at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

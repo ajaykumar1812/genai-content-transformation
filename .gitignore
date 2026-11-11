@@ -1,0 +1,42 @@
+# Python virtual environments & bytecode cache
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Sensitive environment variables & API keys
+.env
+.env.local
+.env.*.local
+
+# Local database files containing user data
+data/*.json
+data/local_storage.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary logs & build artifacts
+*.log
+*.tmp
+*.bak
+*.swp
+*.zip
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Optional frontend artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.env

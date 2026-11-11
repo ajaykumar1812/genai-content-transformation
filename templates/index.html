@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Gen AI Platform for Automated Content Transformation{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center py-5">
+  <div class="container py-lg-4">
+    <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">
+      <i class="bi bi-stars me-1"></i> FINAL YEAR B.TECH CSE CAPSTONE PROJECT &bull; ONLINE AI
+    </div>
+    <h1 class="display-4 fw-bold tracking-tight mb-3">
+      Transform Any Document.<br>
+      <span class="text-primary-gradient">Communicate With Precision.</span>
+    </h1>
+    <p class="lead text-body-secondary mx-auto mb-4" style="max-width: 720px;">
+      A professional, enterprise-grade web platform powered by <strong>Google Gemini</strong> and <strong>OpenAI GPT</strong> models.
+      Ingest PDF, DOCX, and TXT files to produce executive summaries, blogs, business reports, slide decks, and multi-tone adaptations in real time.
+    </p>
+
+    <!-- Supported Provider Badges -->
+    <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-4 text-body-secondary small">
+      <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-cpu text-primary"></i> Google Gemini API (gemini-2.5-flash / pro)</span>
+      <span class="text-body-tertiary">&bull;</span>
+      <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-robot text-success"></i> OpenAI GPT API (gpt-4o-mini / gpt-4o)</span>
+      <span class="text-body-tertiary">&bull;</span>
+      <span class="d-inline-flex align-items-center gap-1"><i class="bi bi-database text-warning"></i> MongoDB Atlas Persistent Storage</span>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 py-2 shadow-sm d-flex align-items-center gap-2">
+        <span>Get Started Free</span> <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4 py-2">
+        <span>Sign In to Workspace</span>
+      </a>
+    </div>
+
+    <!-- Feature Showcase Grid -->
+    <div class="row g-4 text-start mt-2">
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-primary"><i class="bi bi-magic fs-2"></i></div>
+          <h5 class="fw-bold">AI Content Studio</h5>
+          <p class="text-body-secondary small mb-0">Central workbench supporting multi-format generation: blogs, business reports, presentation decks, FAQs, and key takeaways.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-info"><i class="bi bi-file-earmark-text fs-2"></i></div>
+          <h5 class="fw-bold">Intelligent Summarizer</h5>
+          <p class="text-body-secondary small mb-0">Condense complex long-form documents into executive summaries, prioritized bullet points, or structured TL;DR briefs.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-warning"><i class="bi bi-repeat fs-2"></i></div>
+          <h5 class="fw-bold">Semantic Paraphraser</h5>
+          <p class="text-body-secondary small mb-0">Rephrase text across 5 distinct styles: Standard, Professional, Academic, Simple English, and Creative while strictly preserving core facts.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-danger"><i class="bi bi-chat-quote fs-2"></i></div>
+          <h5 class="fw-bold">Tone Transformer</h5>
+          <p class="text-body-secondary small mb-0">Shift your content across 9 voice modalities: Professional, Formal, Casual, Academic, Persuasive, Friendly, Confident, Business, and Creative.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-success"><i class="bi bi-spellcheck fs-2"></i></div>
+          <h5 class="fw-bold">Grammar &amp; Style Corrector</h5>
+          <p class="text-body-secondary small mb-0">Fix spelling, punctuation, and awkward phrasing with detailed explanations and a side-by-side breakdown of corrections.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 bg-body-tertiary p-4">
+          <div class="feature-icon mb-3 text-primary"><i class="bi bi-file-earmark-arrow-up fs-2"></i></div>
+          <h5 class="fw-bold">Document Hub &amp; Multi-Export</h5>
+          <p class="text-body-secondary small mb-0">Ingest PDF, DOCX, and TXT files. Export transformed outputs into Plain Text, Microsoft Word (.docx), PDF, or PowerPoint (.pptx).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

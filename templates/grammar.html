@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Grammar Corrector - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-spellcheck me-1"></i> PRECISION EDITING &bull; ONLINE AI
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">Grammar &amp; Style Corrector</h2>
+      <p class="text-body-secondary mb-0">Detect and fix grammatical issues, spelling mistakes, punctuation, and structural awkwardness.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Source Input -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+        <div class="card-body p-4">
+          <form id="grammarForm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Input Text to Inspect</label>
+              <button type="button" class="btn btn-link btn-sm text-body-secondary text-decoration-none p-0" id="clearGrammarText">
+                <i class="bi bi-x-circle me-1"></i> Clear
+              </button>
+            </div>
+            <textarea id="grammarSource" name="source_text" class="form-control font-monospace custom-textarea mb-3" rows="8" placeholder="Paste your text to proofread and correct..." required></textarea>
+
+            <div class="mb-4">
+              <label class="form-label small text-body-secondary fw-semibold">AI Provider</label>
+              <select class="form-select form-select-sm" name="provider" id="grammarProvider">
+                <option value="gemini" {% if user_settings.preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini</option>
+                <option value="openai" {% if user_settings.preferred_provider == 'openai' %}selected{% endif %}>OpenAI (ChatGPT)</option>
+                <option value="auto">Auto-Select</option>
+              </select>
+            </div>
+
+            <button type="submit" id="grammarBtn" class="btn btn-success w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+              <span class="spinner-border spinner-border-sm d-none" id="grammarSpinner"></span>
+              <i class="bi bi-check-circle" id="grammarIcon"></i>
+              <span id="grammarBtnText">Inspect &amp; Fix Grammar</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Output Card -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0">Corrected &amp; Polished Output</h5>
+              <small class="text-body-secondary" id="grammarMeta">Awaiting input</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-success" id="grammarCopyBtn" disabled><i class="bi bi-clipboard me-1"></i> Copy</button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="grammarExportDropdown" data-bs-toggle="dropdown" disabled>
+                  <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                  <li><button class="dropdown-item" onclick="exportGrammarContent('txt')"><i class="bi bi-filetype-txt text-primary me-2"></i>Plain Text (.txt)</button></li>
+                  <li><button class="dropdown-item" onclick="exportGrammarContent('docx')"><i class="bi bi-file-earmark-word text-info me-2"></i>Word Document (.docx)</button></li>
+                  <li><button class="dropdown-item" onclick="exportGrammarContent('pdf')"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Document (.pdf)</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="grammarErrorAlert" class="alert alert-danger d-none shadow-sm mb-3" role="alert">
+            <div class="d-flex gap-2">
+              <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="d-block">Proofreading Error</strong>
+                <span class="small" id="grammarErrorMsg">Error message here.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="grammarEmpty" class="text-center py-5 my-auto text-body-secondary">
+            <i class="bi bi-spellcheck display-4 text-success opacity-50 mb-3 d-block"></i>
+            <h6 class="fw-semibold mb-1">Proofread Text &amp; Insights Will Appear Here</h6>
+            <p class="small text-body-secondary mb-0">Enter text on the left and click "Inspect &amp; Fix Grammar".</p>
+          </div>
+
+          <!-- Result Container -->
+          <div id="grammarResultContainer" class="d-none p-3 rounded-3 border bg-body overflow-auto flex-grow-1" style="min-height: 380px; max-height: 550px;">
+            <div id="grammarResult" class="markdown-output" style="word-break: break-word;"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-body-secondary">
+            <span id="grammarStats">0 characters &bull; 0 words</span>
+            <span class="badge bg-secondary-subtle text-secondary border" id="grammarBadge">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.grammarOutput = "";
+
+document.getElementById('clearGrammarText').addEventListener('click', () => {
+  document.getElementById('grammarSource').value = '';
+  document.getElementById('grammarSource').focus();
+});
+
+document.getElementById('grammarForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('grammarBtn');
+  const spinner = document.getElementById('grammarSpinner');
+  const icon = document.getElementById('grammarIcon');
+  const btnText = document.getElementById('grammarBtnText');
+  const resultDiv = document.getElementById('grammarResult');
+  const container = document.getElementById('grammarResultContainer');
+  const emptyDiv = document.getElementById('grammarEmpty');
+  const copyBtn = document.getElementById('grammarCopyBtn');
+  const exportDropdown = document.getElementById('grammarExportDropdown');
+  const errorAlert = document.getElementById('grammarErrorAlert');
+  const errorMsg = document.getElementById('grammarErrorMsg');
+  const meta = document.getElementById('grammarMeta');
+  const stats = document.getElementById('grammarStats');
+  const badge = document.getElementById('grammarBadge');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  icon.classList.add('d-none');
+  btnText.textContent = 'Proofreading with Online AI...';
+  errorAlert.classList.add('d-none');
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/grammar', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Grammar correction failed');
+
+    window.grammarOutput = data.output;
+    emptyDiv.classList.add('d-none');
+    container.classList.remove('d-none');
+    resultDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.output) : data.output;
+
+    copyBtn.disabled = false;
+    exportDropdown.disabled = false;
+
+    meta.textContent = `${data.engine} · Just Now`;
+    stats.textContent = `${data.output.length} characters • ${data.words_output} words`;
+    badge.textContent = data.engine;
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+    showToast('Grammar corrected successfully!');
+  } catch (err) {
+    errorAlert.classList.remove('d-none');
+    errorMsg.textContent = err.message;
+    badge.textContent = 'Error';
+    badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    icon.classList.remove('d-none');
+    btnText.textContent = 'Inspect & Fix Grammar';
+  }
+});
+
+document.getElementById('grammarCopyBtn').addEventListener('click', () => {
+  if (!window.grammarOutput) return;
+  navigator.clipboard.writeText(window.grammarOutput).then(() => showToast('Copied to clipboard!'));
+});
+
+async function exportGrammarContent(formatType) {
+  if (!window.grammarOutput) return;
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: window.grammarOutput, type: formatType, title: "Grammar & Style Fix" })
+    });
+    if (!res.ok) throw new Error('Export request failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grammar_fixed.${formatType}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`${formatType.toUpperCase()} exported successfully!`);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+</script>
+{% endblock %}

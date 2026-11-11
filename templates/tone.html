@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Tone Transformer - Gen AI Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <div class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 rounded-pill mb-2">
+        <i class="bi bi-chat-quote me-1"></i> VOICE &amp; PERSPECTIVE ADAPTATION &bull; ONLINE AI
+      </div>
+      <h2 class="fw-bold tracking-tight mb-1">Tone Transformer</h2>
+      <p class="text-body-secondary mb-0">Shift your content's emotional resonance and professional altitude while preserving all core facts.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Source & Tone Selectors -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary">
+        <div class="card-body p-4">
+          <form id="toneForm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Original Content</label>
+              <button type="button" class="btn btn-link btn-sm text-body-secondary text-decoration-none p-0" id="clearToneText">
+                <i class="bi bi-x-circle me-1"></i> Clear
+              </button>
+            </div>
+            <textarea id="toneSource" name="source_text" class="form-control font-monospace custom-textarea mb-3" rows="8" placeholder="Paste your draft to adapt its tone..." required></textarea>
+
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label small text-body-secondary fw-semibold">Target Tone</label>
+                <select class="form-select form-select-sm" name="tone" id="targetTone">
+                  <option value="Professional" selected>Professional</option>
+                  <option value="Formal">Formal &amp; Authoritative</option>
+                  <option value="Casual">Casual &amp; Relaxed</option>
+                  <option value="Academic">Academic &amp; Scholarly</option>
+                  <option value="Persuasive">Persuasive &amp; Action-Oriented</option>
+                  <option value="Friendly">Friendly &amp; Warm</option>
+                  <option value="Confident">Confident &amp; Decisive</option>
+                  <option value="Business">Business &amp; Executive</option>
+                  <option value="Creative">Creative &amp; Expressive</option>
+                </select>
+              </div>
+
+              <div class="col-sm-6">
+                <label class="form-label small text-body-secondary fw-semibold">Target Audience</label>
+                <select class="form-select form-select-sm" name="audience" id="toneAudience">
+                  <option value="General audience" selected>General Audience</option>
+                  <option value="Business professionals">Business Executives</option>
+                  <option value="Technical audience">Technical Engineering Teams</option>
+                  <option value="Students">Students &amp; Learners</option>
+                  <option value="Government officials">Policy Makers &amp; Government</option>
+                  <option value="Marketing teams">Marketing &amp; Social Audience</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small text-body-secondary fw-semibold">AI Provider</label>
+              <select class="form-select form-select-sm" name="provider" id="toneProvider">
+                <option value="gemini" {% if user_settings.preferred_provider == 'gemini' %}selected{% endif %}>Google Gemini</option>
+                <option value="openai" {% if user_settings.preferred_provider == 'openai' %}selected{% endif %}>OpenAI (ChatGPT)</option>
+                <option value="auto">Auto-Select</option>
+              </select>
+            </div>
+
+            <button type="submit" id="toneBtn" class="btn btn-warning w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+              <span class="spinner-border spinner-border-sm d-none" id="toneSpinner"></span>
+              <i class="bi bi-magic" id="toneIcon"></i>
+              <span id="toneBtnText">Transform Tone</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Output Card -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 bg-body-tertiary d-flex flex-column">
+        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0">Transformed Deliverable</h5>
+              <small class="text-body-secondary" id="toneMeta">Awaiting input</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-warning" id="toneCopyBtn" disabled><i class="bi bi-clipboard me-1"></i> Copy</button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="toneExportDropdown" data-bs-toggle="dropdown" disabled>
+                  <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                  <li><button class="dropdown-item" onclick="exportToneContent('txt')"><i class="bi bi-filetype-txt text-primary me-2"></i>Plain Text (.txt)</button></li>
+                  <li><button class="dropdown-item" onclick="exportToneContent('docx')"><i class="bi bi-file-earmark-word text-info me-2"></i>Word Document (.docx)</button></li>
+                  <li><button class="dropdown-item" onclick="exportToneContent('pdf')"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Document (.pdf)</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="toneErrorAlert" class="alert alert-danger d-none shadow-sm mb-3" role="alert">
+            <div class="d-flex gap-2">
+              <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="d-block">Tone Shift Error</strong>
+                <span class="small" id="toneErrorMsg">Error message here.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="toneEmpty" class="text-center py-5 my-auto text-body-secondary">
+            <i class="bi bi-chat-quote display-4 text-warning opacity-50 mb-3 d-block"></i>
+            <h6 class="fw-semibold mb-1">Tone Shifted Deliverable Will Appear Here</h6>
+            <p class="small text-body-secondary mb-0">Select your target voice and click "Transform Tone".</p>
+          </div>
+
+          <!-- Result Container -->
+          <div id="toneResultContainer" class="d-none p-3 rounded-3 border bg-body overflow-auto flex-grow-1" style="min-height: 380px; max-height: 550px;">
+            <div id="toneResult" class="markdown-output" style="word-break: break-word;"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-body-secondary">
+            <span id="toneStats">0 characters &bull; 0 words</span>
+            <span class="badge bg-secondary-subtle text-secondary border" id="toneBadge">Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.toneOutput = "";
+
+document.getElementById('clearToneText').addEventListener('click', () => {
+  document.getElementById('toneSource').value = '';
+  document.getElementById('toneSource').focus();
+});
+
+document.getElementById('toneForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('toneBtn');
+  const spinner = document.getElementById('toneSpinner');
+  const icon = document.getElementById('toneIcon');
+  const btnText = document.getElementById('toneBtnText');
+  const resultDiv = document.getElementById('toneResult');
+  const container = document.getElementById('toneResultContainer');
+  const emptyDiv = document.getElementById('toneEmpty');
+  const copyBtn = document.getElementById('toneCopyBtn');
+  const exportDropdown = document.getElementById('toneExportDropdown');
+  const errorAlert = document.getElementById('toneErrorAlert');
+  const errorMsg = document.getElementById('toneErrorMsg');
+  const meta = document.getElementById('toneMeta');
+  const stats = document.getElementById('toneStats');
+  const badge = document.getElementById('toneBadge');
+
+  btn.disabled = true;
+  spinner.classList.remove('d-none');
+  icon.classList.add('d-none');
+  btnText.textContent = 'Adapting Tone with Online AI...';
+  errorAlert.classList.add('d-none');
+
+  try {
+    const formData = new FormData(this);
+    const res = await fetch('/api/tone', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Tone transformation failed');
+
+    window.toneOutput = data.output;
+    emptyDiv.classList.add('d-none');
+    container.classList.remove('d-none');
+    resultDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.output) : data.output;
+
+    copyBtn.disabled = false;
+    exportDropdown.disabled = false;
+
+    meta.textContent = `${data.engine} · Just Now`;
+    stats.textContent = `${data.output.length} characters • ${data.words_output} words`;
+    badge.textContent = data.engine;
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+    showToast('Tone transformed successfully!');
+  } catch (err) {
+    errorAlert.classList.remove('d-none');
+    errorMsg.textContent = err.message;
+    badge.textContent = 'Error';
+    badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('d-none');
+    icon.classList.remove('d-none');
+    btnText.textContent = 'Transform Tone';
+  }
+});
+
+document.getElementById('toneCopyBtn').addEventListener('click', () => {
+  if (!window.toneOutput) return;
+  navigator.clipboard.writeText(window.toneOutput).then(() => showToast('Copied to clipboard!'));
+});
+
+async function exportToneContent(formatType) {
+  if (!window.toneOutput) return;
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: window.toneOutput, type: formatType, title: "Tone Shifted Content" })
+    });
+    if (!res.ok) throw new Error('Export request failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tone_shifted.${formatType}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`${formatType.toUpperCase()} exported successfully!`);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+</script>
+{% endblock %}
