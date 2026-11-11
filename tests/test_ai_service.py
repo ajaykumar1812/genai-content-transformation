@@ -22,16 +22,17 @@ class TestAIService(unittest.TestCase):
 
     @patch("backend.ai_service._gemini_service.generate")
     def test_gemini_summarizer(self, mock_gemini):
+        target_model = Config.GEMINI_MODEL
         mock_gemini.return_value = {
             "output": "# Summary Overview\nGenerative AI accelerates enterprise productivity while requiring strict data governance.",
             "provider": "Google Gemini",
-            "model": "gemini-3.8-flash"
+            "model": target_model
         }
         with patch("backend.ai_service._gemini_service.is_configured", return_value=True):
             output, provider, model = summarize_text(self.sample_text, summary_type="Executive Summary", provider="gemini")
             self.assertIn("Generative AI accelerates", output)
             self.assertEqual(provider, "Google Gemini")
-            self.assertEqual(model, "gemini-3.8-flash")
+            self.assertEqual(model, target_model)
 
     @patch("backend.ai_service._openai_service.generate")
     def test_openai_paraphraser(self, mock_openai):

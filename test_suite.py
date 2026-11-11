@@ -123,13 +123,14 @@ def run_all_tests():
     try:
         with patch("backend.ai_service._gemini_service.generate") as mock_gemini, \
              patch("backend.ai_service._gemini_service.is_configured", return_value=True):
+            target_model = Config.GEMINI_MODEL
             mock_gemini.return_value = {
                 "output": "# Summary Overview\nAI automates enterprise tasks.",
                 "provider": "Google Gemini",
-                "model": "gemini-3.8-flash"
+                "model": target_model
             }
             out, prov, mod = summarize_text(sample_text, provider="gemini")
-            record_test(7, "Gemini Integration", "Provider: Google Gemini, Model: gemini-3.8-flash", f"{prov} ({mod})", prov == "Google Gemini" and mod == "gemini-3.8-flash", "Verified with official google-genai SDK")
+            record_test(7, "Gemini Integration", f"Provider: Google Gemini, Model: {target_model}", f"{prov} ({mod})", prov == "Google Gemini" and mod == target_model, "Verified with official google-genai SDK")
     except Exception as e:
         record_test(7, "Gemini Integration", "Google Gemini output", f"Error: {e}", False)
 

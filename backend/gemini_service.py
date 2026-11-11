@@ -19,7 +19,7 @@ class GeminiService:
         timeout: Optional[float] = None
     ):
         self.api_key = (api_key or Config.GEMINI_API_KEY or "").strip()
-        self.default_model = (default_model or Config.GEMINI_MODEL or "gemini-3.8-flash").strip()
+        self.default_model = (default_model or Config.GEMINI_MODEL or "gemini-3.6-flash").strip()
         self.max_attempts = max_attempts or getattr(Config, "GEMINI_MAX_RETRIES", 3)
         self.initial_delay = initial_delay if initial_delay is not None else getattr(Config, "GEMINI_RETRY_INITIAL_DELAY", 1.0)
         self.backoff_factor = backoff_factor if backoff_factor is not None else getattr(Config, "GEMINI_RETRY_BACKOFF_FACTOR", 2.0)
@@ -156,9 +156,9 @@ class GeminiService:
                         target_model, code or 404, safe_summary
                     )
                     raise AIServiceModelError(
-                        f"Selected Gemini model '{target_model}' was not found or is unavailable in your region. "
-                        f"Supported models include gemini-3.8-flash (recommended default), gemini-2.5-flash, and gemini-2.5-pro. "
-                        f"Please verify model availability with your Gemini API key or update the GEMINI_MODEL setting in .env."
+                        f"Selected Gemini model '{target_model}' was not found or is unavailable. "
+                        f"Supported active models include gemini-3.6-flash (recommended), gemini-3.5-flash, and gemini-3.8-flash. "
+                        f"Please select an active model in the studio or settings dropdown."
                     ) from e
 
                 # --- 3. NON-RETRYABLE: Malformed Input / Bad Request (400) ---
@@ -201,6 +201,18 @@ class GeminiService:
 
                 # --- 5. RETRYABLE: Rate Limit / Quota Exceeded (429) ---
                 elif code == 429 or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower() or "rate" in msg.lower():
+                    # If daily Free Tier limit is exceeded, backoff retries cannot resolve it; fail fast with clear switch guidance
+                    lower_err = msg.lower()
+                    if "per day limit exceeded" in lower_err or "quota exceeded for metric" in lower_err or "free_tier_requests" in lower_err:
+                        logger.error(
+                            "Provider: Google Gemini | Model: %s | HTTP Status: 429 | Daily quota limit reached: %s",
+                            target_model, safe_summary
+                        )
+                        raise AIServiceQuotaError(
+                            f"Daily Free Tier request quota reached for model '{target_model}' (HTTP 429). "
+                            f"Please select 'Gemini 3.6 Flash' or 'Gemini 3.5 Flash' in the model selector to continue."
+                        ) from e
+
                     if attempt < self.max_attempts:
                         delay = self.initial_delay * (self.backoff_factor ** (attempt - 1))
                         remaining = self.timeout - (time.time() - start_time)

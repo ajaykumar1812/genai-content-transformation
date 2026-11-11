@@ -108,13 +108,13 @@ def resolve_provider_and_model(
                 "Google Gemini provider selected, but GEMINI_API_KEY is not configured in your environment. "
                 "Please configure GEMINI_API_KEY or switch to OpenAI."
             )
-        model = (requested_model or Config.GEMINI_MODEL or "gemini-3.8-flash").strip()
+        model = (requested_model or Config.GEMINI_MODEL or "gemini-3.6-flash").strip()
         return "gemini", model
 
     elif req_p == "auto":
         # Check Gemini first, then OpenAI
         if _gemini_service.is_configured():
-            model = (requested_model or Config.GEMINI_MODEL or "gemini-3.8-flash").strip()
+            model = (requested_model or Config.GEMINI_MODEL or "gemini-3.6-flash").strip()
             return "gemini", model
         elif _openai_service.is_configured():
             model = (requested_model or Config.OPENAI_MODEL or "gpt-4o-mini").strip()

@@ -47,9 +47,9 @@
             <div class="mb-3">
               <label class="form-label small text-body-secondary fw-semibold">Default Model</label>
               <select class="form-select" name="preferred_model" id="settingsModel">
-                <option value="gemini-3.8-flash" {% if settings.preferred_model == 'gemini-3.8-flash' or not settings.preferred_model %}selected{% endif %}>Gemini 3.8 Flash (Recommended)</option>
-                <option value="gemini-2.5-flash" {% if settings.preferred_model == 'gemini-2.5-flash' %}selected{% endif %}>Gemini 2.5 Flash</option>
-                <option value="gemini-2.5-pro" {% if settings.preferred_model == 'gemini-2.5-pro' %}selected{% endif %}>Gemini 2.5 Pro</option>
+                <option value="gemini-3.6-flash" {% if settings.preferred_model == 'gemini-3.6-flash' or not settings.preferred_model %}selected{% endif %}>Gemini 3.6 Flash (Active & Recommended)</option>
+                <option value="gemini-3.5-flash" {% if settings.preferred_model == 'gemini-3.5-flash' %}selected{% endif %}>Gemini 3.5 Flash</option>
+                <option value="gemini-3.8-flash" {% if settings.preferred_model == 'gemini-3.8-flash' %}selected{% endif %}>Gemini 3.8 Flash (Daily Quota: 20 req/day)</option>
                 <option value="gpt-4o-mini" {% if settings.preferred_model == 'gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
                 <option value="gpt-4o" {% if settings.preferred_model == 'gpt-4o' %}selected{% endif %}>GPT-4o</option>
               </select>
