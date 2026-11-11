@@ -69,7 +69,7 @@ In contemporary academic, corporate, and research settings, knowledge workers sp
 
 ### 1. AI Content Studio
 - **Dual-Panel Workspace**: Side-by-side view featuring real-time input configuration on the left and rendered Markdown on the right.
-- **Provider & Model Selector**: Choose dynamically between Google Gemini (`gemini-3.8-flash`, `gemini-2.5-flash`, `gemini-2.5-pro`) and OpenAI (`gpt-4o-mini`, `gpt-4o`).
+- **Provider & Model Selector**: Choose dynamically between Google Gemini (`gemini-3.6-flash` ✅, `gemini-3.5-flash` ✅, `gemini-3.8-flash` ⚠️ 20 req/day Free Tier) and OpenAI (`gpt-4o-mini`, `gpt-4o`).
 - **Dynamic Deliverable Types**:
   - Executive Summaries
   - High-Conversion SEO Blog Posts (with Meta Description and Keywords)
@@ -142,7 +142,7 @@ flowchart TD
     end
 
     subgraph External["External Cloud Services"]
-        Gemini["Google Gemini API\n(gemini-3.8-flash / 2.5)"]
+        Gemini["Google Gemini API\n(gemini-3.6-flash / 3.5-flash)"]
         OpenAI["OpenAI API\n(gpt-4o-mini / gpt-4o)"]
         Atlas[("MongoDB Atlas Cloud\n(Users, History, Settings)")]
     end
@@ -326,7 +326,7 @@ MONGO_DB=genai_content_transformation
 
 # Google Gemini API
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-3.6-flash
 
 # OpenAI API
 OPENAI_API_KEY=your_openai_api_key_here
@@ -369,8 +369,12 @@ For permanent cloud persistence across server restarts or Render redeployments:
 5. In your `.env` file, set:
    ```ini
    GEMINI_API_KEY=AIzaSy...your_key_here
-   GEMINI_MODEL=gemini-3.8-flash
+   GEMINI_MODEL=gemini-3.6-flash
    ```
+
+> **Free Tier quota note:** `gemini-3.6-flash` and `gemini-3.5-flash` are the recommended defaults.
+> `gemini-3.8-flash` shares a **20 requests/day** Free Tier bucket — if you hit the daily limit the app shows a clear error asking you to switch to `gemini-3.6-flash` or `gemini-3.5-flash`.
+> Paid API plans have no such restriction.
 
 ### OpenAI API Setup
 1. Go to [OpenAI Platform API Keys](https://platform.openai.com/api-keys).
@@ -387,10 +391,10 @@ For permanent cloud persistence across server restarts or Render redeployments:
 
 ## 🧪 Automated Testing Suite
 
-The project includes an automated test suite verifying all 30 critical system scenarios:
+The project includes an automated test suite verifying all 35 critical system scenarios:
 
 ```cmd
-:: Run unified 30-scenario test runner
+:: Run unified 35-scenario test runner
 python test_suite.py
 ```
 
@@ -433,6 +437,11 @@ python -m unittest discover tests
 | 28 | Unauthorized Access | User A cannot read or delete User B's records | **PASS** |
 | 29 | API Failure Handling | Quota (429) & Auth (401) errors distinctly handled | **PASS** |
 | 30 | Database Failure Handling | Automatic fallback to local storage on ping fail | **PASS** |
+| 31 | Retry on Transient 503 | Exponential backoff retries succeed on 2nd attempt | **PASS** |
+| 32 | Retry Exhaustion | All 3 attempts fail — clear error returned to caller | **PASS** |
+| 33 | Daily Quota Fast-Fail | 20 req/day Free Tier limit → immediate error, no retry | **PASS** |
+| 34 | Auth Error No Retry | Invalid API key → immediate 401 error, no retry | **PASS** |
+| 35 | Model Not Found Error | Unavailable model → 404 error with guidance message | **PASS** |
 
 ---
 
@@ -456,7 +465,9 @@ The repository is configured for direct deployment on [Render](https://render.co
    - `MONGO_URI`: (Your MongoDB Atlas connection string)
    - `MONGO_DB`: `genai_content_transformation`
    - `GEMINI_API_KEY`: (Your Google Gemini API key)
+   - `GEMINI_MODEL`: `gemini-3.6-flash`
    - `OPENAI_API_KEY`: (Your OpenAI API key)
+   - `OPENAI_MODEL`: `gpt-4o-mini`
 6. Click **Deploy Web Service**.
 
 ---
